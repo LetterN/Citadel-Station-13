@@ -3,10 +3,14 @@ SUBSYSTEM_DEF(pai)
 
 	flags = SS_NO_INIT|SS_NO_FIRE
 
+	/// Global list of candidates
 	var/list/candidates = list()
+	/// Global list of pai cards
+	var/list/pai_card_list = list()
+	/// Global list of pai cards
 	var/ghost_spam = FALSE
 	var/spam_delay = 100
-	var/list/pai_card_list = list()
+
 
 /datum/controller/subsystem/pai/Topic(href, href_list)
 	if(href_list["download"])
@@ -136,10 +140,41 @@ SUBSYSTEM_DEF(pai)
 /datum/controller/subsystem/pai/proc/spam_again()
 	ghost_spam = FALSE
 
-/datum/controller/subsystem/pai/proc/check_ready(var/datum/paiCandidate/C)
+
+/datum/controller/subsystem/pai/proc/install_personality(personality_ref, pai_card_ref)
+	var/datum/paiCandidate/candidate = locate(personality_ref) in candidates
+	var/obj/item/paicard/card = locate(pai_card_ref) in pai_card_list
+
+	/// installed already?
+	if(card.pai) 
+		return
+
+	if(!istype(card, /obj/item/paicard) || !istype(candidate, /datum/paiCandidate))
+		return
+
+	if(check_ready(candidate) != candidate)
+		return
+
+	var/mob/living/silicon/pai/pai = new(card)
+	
+	if(!candidate.name)
+		pai.name = pick(GLOB.ninja_names)
+	else
+		pai.name = candidate.name
+
+	pai.real_name = pai.name
+	pai.key = candidate.key
+
+	card.setPersonality(pai)
+	SSticker.mode.update_cult_icons_removed(card.pai.mind)
+
+	candidates -= candidate
+	usr << browse(null, "window=findPai")
+
+/datum/controller/subsystem/pai/proc/check_ready(datum/paiCandidate/C)
 	if(!C.ready)
 		return FALSE
-	for(var/mob/dead/observer/O in GLOB.player_list)
+	for(var/mob/dead/observer/O in GLOB.dead_mob_list) //dead_mob_list is generaly faster than skimming through the entire player list
 		if(O.key == C.key)
 			return C
 	return FALSE
@@ -147,7 +182,7 @@ SUBSYSTEM_DEF(pai)
 /datum/controller/subsystem/pai/proc/findPAI(obj/item/paicard/p, mob/user)
 	if(!ghost_spam)
 		ghost_spam = TRUE
-		for(var/mob/dead/observer/G in GLOB.player_list)
+		for(var/mob/dead/observer/G in GLOB.dead_mob_list)
 			if(!G.key || !G.client)
 				continue
 			if(!(ROLE_PAI in G.client.prefs.be_special))
