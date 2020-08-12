@@ -7,27 +7,28 @@
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	slot_flags = ITEM_SLOT_BELT
-	var/mob/living/silicon/pai/pai
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_integrity = 200
+
+	/// The pAI Mob
+	var/mob/living/silicon/pai/pai
 
 /obj/item/paicard/suicide_act(mob/living/user)
 	user.visible_message("<span class='suicide'>[user] is staring sadly at [src]! [user.p_they()] can't keep living without real human intimacy!</span>")
 	return OXYLOSS
 
 /obj/item/paicard/Initialize()
-	SSpai.pai_card_list += src
+	. = ..()
+	SSpai.pai_card_list |= src
 	add_overlay("pai-off")
-	return ..()
 
 /obj/item/paicard/Destroy()
-	//Will stop people throwing friend pAIs into the singularity so they can respawn
-	SSpai.pai_card_list -= src
-	if (!QDELETED(pai))
+	if(!QDELETED(pai))
 		QDEL_NULL(pai)
+	SSpai.pai_card_list -= src
 	return ..()
 
-/obj/item/paicard/attack_self(mob/user)
+/obj/item/paicard/ui_interact(mob/user)
 	if (!in_range(src, user))
 		return
 	user.set_machine(src)
@@ -65,8 +66,7 @@
 	return
 
 /obj/item/paicard/Topic(href, href_list)
-
-	if(!usr || usr.stat)
+	if(!usr?.stat)
 		return
 
 	if(href_list["request"])
@@ -119,42 +119,42 @@
 //		WIRE_TRANSMIT = 4
 
 /obj/item/paicard/proc/setPersonality(mob/living/silicon/pai/personality)
-	src.pai = personality
-	src.add_overlay("pai-null")
+	pai = personality
+	add_overlay("pai-null")
 
-	playsound(loc, 'sound/effects/pai_boot.ogg', 50, 1, -1)
+	playsound(loc, 'sound/effects/pai_boot.ogg', 50, TRUE, -1)
 	audible_message("\The [src] plays a cheerful startup noise!")
 
 /obj/item/paicard/proc/setEmotion(emotion)
 	if(pai)
-		src.cut_overlays()
+		cut_overlays()
 		switch(emotion)
 			if(1)
-				src.add_overlay("pai-happy")
+				add_overlay("pai-happy")
 			if(2)
-				src.add_overlay("pai-cat")
+				add_overlay("pai-cat")
 			if(3)
-				src.add_overlay("pai-extremely-happy")
+				add_overlay("pai-extremely-happy")
 			if(4)
-				src.add_overlay("pai-face")
+				add_overlay("pai-face")
 			if(5)
-				src.add_overlay("pai-laugh")
+				add_overlay("pai-laugh")
 			if(6)
-				src.add_overlay("pai-off")
+				add_overlay("pai-off")
 			if(7)
-				src.add_overlay("pai-sad")
+				add_overlay("pai-sad")
 			if(8)
-				src.add_overlay("pai-angry")
+				add_overlay("pai-angry")
 			if(9)
-				src.add_overlay("pai-what")
+				add_overlay("pai-what")
 			if(10)
-				src.add_overlay("pai-null")
+				add_overlay("pai-null")
 			if(11)
-				src.add_overlay("pai-exclamation")
+				add_overlay("pai-exclamation")
 			if(12)
-				src.add_overlay("pai-question")
+				add_overlay("pai-question")
 			if(13)
-				src.add_overlay("pai-sunglasses")
+				add_overlay("pai-sunglasses")
 
 /obj/item/paicard/proc/alertUpdate()
 	visible_message("<span class ='info'>[src] flashes a message across its screen, \"Additional personalities available for download.\"", "<span class='notice'>[src] bleeps electronically.</span>")

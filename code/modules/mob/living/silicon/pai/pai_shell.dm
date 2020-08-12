@@ -18,15 +18,19 @@
 
 	emitter_next_use = world.time + emittercd
 	density = TRUE
+
 	if(istype(card.loc, /obj/item/pda))
 		var/obj/item/pda/P = card.loc
 		P.pai = null
+		P.update_icon()
 		P.visible_message("<span class='notice'>[src] ejects itself from [P]!</span>")
+
 	if(isliving(card.loc))
 		var/mob/living/L = card.loc
 		if(!L.temporarilyRemoveItemFromInventory(card))
 			to_chat(src, "<span class='warning'>Error: Unable to expand to mobile form. Chassis is restrained by some device or person.</span>")
 			return FALSE
+
 	if(istype(card.loc, /obj/item/integrated_circuit/input/pAI_connector))
 		var/obj/item/integrated_circuit/input/pAI_connector/C = card.loc
 		C.RemovepAI()
@@ -34,32 +38,40 @@
 		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
 		C.installed_pai = null
 		C.push_data()
+
 	forceMove(get_turf(card))
 	card.forceMove(src)
 	update_mobility()
+
 	if(client)
 		client.perspective = EYE_PERSPECTIVE
 		client.eye = src
+
 	set_light(0)
 	icon_state = "[chassis]"
 	visible_message("<span class='boldnotice'>[src] folds out its holochassis emitter and forms a holoshell around itself!</span>")
 	holoform = TRUE
 
 /mob/living/silicon/pai/proc/fold_in(force = FALSE)
-	emitter_next_use = world.time + (force? emitteroverloadcd : emittercd)
+	emitter_next_use = world.time + (force ? emitteroverloadcd : emittercd)
 	icon_state = "[chassis]"
+
 	if(!holoform)
 		. = fold_out(force)
 		return
+
 	if(force)
 		short_radio()
 		visible_message("<span class='warning'>[src] shorts out, collapsing back into their storage card, sparks emitted from their radio antenna!</span>")
 	else
 		visible_message("<span class='notice'>[src] deactivates its holochassis emitter and folds back into a compact card!</span>")
+
 	stop_pulling()
+
 	if(client)
 		client.perspective = EYE_PERSPECTIVE
 		client.eye = card
+
 	var/turf/T = drop_location()
 	card.forceMove(T)
 	forceMove(card)
@@ -73,13 +85,17 @@
 	if(!isturf(loc) && loc != card)
 		to_chat(src, "<span class='boldwarning'>You can not change your holochassis composite while not on the ground or in your card!</span>")
 		return FALSE
+
 	var/list/choices = list("Preset - Basic", "Preset - Dynamic")
 	if(CONFIG_GET(flag/pai_custom_holoforms))
 		choices += "Custom"
+
 	var/old_chassis = chassis
 	var/choicetype = input(src, "What type of chassis do you want to use?") as null|anything in choices
+
 	if(!choicetype)
 		return FALSE
+
 	switch(choicetype)
 		if("Custom")
 			chassis = "custom"
@@ -94,6 +110,7 @@
 				return FALSE
 			chassis = "dynamic"
 			dynamic_chassis = choice
+
 	resist_a_rest(FALSE, TRUE)
 	update_icon()
 	if(possible_chassis[old_chassis])
@@ -125,6 +142,7 @@
 	set name = "Toggle Chassis Sit"
 	set category = "IC"
 	set desc = "Whether or not to try to use a sitting icon versus a resting icon. Takes priority over belly-up resting."
+
 	dynamic_chassis_sit = !dynamic_chassis_sit
 	to_chat(usr, "<span class='boldnotice'>You are now [dynamic_chassis_sit? "sitting" : "lying down"].</span>")
 	update_icon()
@@ -133,6 +151,7 @@
 	set name = "Toggle Chassis Belly Up"
 	set category = "IC"
 	set desc = "Whether or not to try to use a belly up icon while resting. Overridden by sitting."
+
 	dynamic_chassis_bellyup = !dynamic_chassis_bellyup
 	to_chat(usr, "<span class='boldnotice'>You are now lying on your [dynamic_chassis_bellyup? "back" : "front"].</span>")
 	update_icon()

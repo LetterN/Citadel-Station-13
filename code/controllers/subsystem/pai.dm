@@ -7,7 +7,7 @@ SUBSYSTEM_DEF(pai)
 	var/list/candidates = list()
 	/// Global list of pai cards
 	var/list/pai_card_list = list()
-	/// Global list of pai cards
+
 	var/ghost_spam = FALSE
 	var/spam_delay = 100
 
@@ -145,10 +145,10 @@ SUBSYSTEM_DEF(pai)
 	var/datum/paiCandidate/candidate = locate(personality_ref) in candidates
 	var/obj/item/paicard/card = locate(pai_card_ref) in pai_card_list
 
-	/// installed already?
-	if(card.pai) 
-		return
+	if(!card || !candidate || card?.pai)
+		return FALSE
 
+	/// Not a paicard on the list? or not a paicandidate
 	if(!istype(card, /obj/item/paicard) || !istype(candidate, /datum/paiCandidate))
 		return
 
@@ -173,11 +173,11 @@ SUBSYSTEM_DEF(pai)
 
 /datum/controller/subsystem/pai/proc/check_ready(datum/paiCandidate/C)
 	if(!C.ready)
-		return FALSE
+		return null
 	for(var/mob/dead/observer/O in GLOB.dead_mob_list) //dead_mob_list is generaly faster than skimming through the entire player list
 		if(O.key == C.key)
 			return C
-	return FALSE
+	return null
 
 /datum/controller/subsystem/pai/proc/findPAI(obj/item/paicard/p, mob/user)
 	if(!ghost_spam)
