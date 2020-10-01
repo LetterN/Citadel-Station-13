@@ -5,34 +5,59 @@
 	icon_state = "template"
 	w_class = WEIGHT_CLASS_TINY
 	custom_materials = null				// To be filled later
-	var/obj/item/electronic_assembly/assembly // Reference to the assembly holding this circuit, if any.
-	var/extended_desc
-	var/list/inputs = list()
-	var/list/inputs_default = list()// Assoc list which will fill a pin with data upon creation.  e.g. "2" = 0 will set input pin 2 to equal 0 instead of null.
-	var/list/outputs = list()
-	var/list/outputs_default =list()// Ditto, for output.
-	var/list/activators = list()
-	var/next_use = 0 				// Uses world.time
-	var/complexity = 1 				// This acts as a limitation on building machines, more resource-intensive components cost more 'space'.
-	var/size = 1					// This acts as a limitation on building machines, bigger components cost more 'space'. -1 for size 0
-	var/cooldown_per_use = 1		// Circuits are limited in how many times they can be work()'d by this variable.
-	var/ext_cooldown = 0			// Circuits are limited in how many times they can be work()'d with external world by this variable.
-	var/power_draw_per_use = 0 		// How much power is drawn when work()'d.
-	var/power_draw_idle = 0			// How much power is drawn when doing nothing.
-	var/spawn_flags					// Used for world initializing, see the #defines above.
-	var/action_flags = NONE			// Used for telling circuits that can do certain actions from other circuits.
-	var/category_text = "NO CATEGORY THIS IS A BUG"	// To show up on circuit printer, and perhaps other places.
-	var/removable = TRUE 			// Determines if a circuit is removable from the assembly.
+
+	/// Reference to the assembly holding this circuit, if any.
+	var/obj/item/electronic_assembly/assembly
+
+	/// Used for world initializing, see the #defines above.
+	var/spawn_flags = NONE
+	/// Used for telling circuits that can do certain actions from other circuits.
+	var/action_flags = NONE
+	/// To show up on circuit printer, and perhaps other places.
+	var/category_text = "NO CATEGORY THIS IS A BUG"
 	var/displayed_name = ""
+	var/extended_desc
+	/// Determines if a circuit is removable from the assembly.
+	var/removable = TRUE
+
+	/// Input pin(s)
+	var/list/inputs = list()
+	/// Assoc list which will fill a pin with data upon creation.  e.g. "2" = 0 will set input pin 2 to equal 0 instead of null.
+	var/list/inputs_default = list()
+	/// Output pin(s)
+	var/list/outputs = list()
+	/// Ditto, for output.
+	var/list/outputs_default = list()
+	/// Signal pin(s)
+	var/list/activators = list()
+
+	/// This acts as a limitation on building machines, more resource-intensive components cost more 'space'.
+	var/complexity = 1
+	/// This acts as a limitation on building machines, bigger components cost more 'space'. -1 for size 0
+	var/size = 1
+
+	/// Circuits are limited in how many times they can be work()'d by this variable.
+	var/cooldown_per_use = 1
+	/// Circuits are limited in how many times they can be work()'d with external world by this variable.
+	var/ext_cooldown = 0
+	/// Uses world.time
+	var/next_use
+
+	/// How much power is drawn when work()'d.
+	var/power_draw_per_use = 0
+	/// How much power is drawn when doing nothing.
+	var/power_draw_idle = 0
+
 	var/demands_object_input = FALSE
 	var/can_input_object_when_closed = FALSE
 
 
 /*
-	Integrated circuits are essentially modular machines.  Each circuit has a specific function, and combining them inside Electronic Assemblies allows
-a creative player the means to solve many problems.  Circuits are held inside an electronic assembly, and are wired using special tools.
-*/
-
+ * Integrated circuits are essentially modular machines.
+ * Each circuit has a specific function, and combining them inside Electronic Assemblies allows a
+ * creative player the means to solve many problems.
+ * Circuits are held inside an electronic assembly, and are wired using special tools.
+ */
 /obj/item/integrated_circuit/examine(mob/user)
 	interact(user)
 	. = ..()
@@ -41,7 +66,7 @@ a creative player the means to solve many problems.  Circuits are held inside an
 		. += text
 
 // Can be called via electronic_assembly/attackby()
-/obj/item/integrated_circuit/proc/additem(var/obj/item/I, var/mob/living/user)
+/obj/item/integrated_circuit/proc/additem(obj/item/I, mob/living/user)
 	attackby(I, user)
 
 // This should be used when someone is examining while the case is opened.
@@ -62,17 +87,17 @@ a creative player the means to solve many problems.  Circuits are held inside an
 	to_chat(user, any_examine(user))
 	interact(user)
 
-// This should be used when someone is examining from an 'outside' perspective, e.g. reading a screen or LED.
+/// This should be used when someone is examining from an 'outside' perspective, e.g. reading a screen or LED.
 /obj/item/integrated_circuit/proc/external_examine(mob/user)
 	return any_examine(user)
 
 /obj/item/integrated_circuit/proc/any_examine(mob/user)
 	return
 
-/obj/item/integrated_circuit/proc/attackby_react(var/atom/movable/A,mob/user)
+/obj/item/integrated_circuit/proc/attackby_react(atom/movable/A, mob/user)
 	return
 
-/obj/item/integrated_circuit/proc/sense(var/atom/movable/A,mob/user,prox)
+/obj/item/integrated_circuit/proc/sense(atom/movable/A, mob/user, prox)
 	return
 
 /obj/item/integrated_circuit/proc/check_interactivity(mob/user)
@@ -82,12 +107,12 @@ a creative player the means to solve many problems.  Circuits are held inside an
 		return user.canUseTopic(src, BE_CLOSE)
 
 /obj/item/integrated_circuit/Initialize()
+	. = ..()
 	displayed_name = name
 	setup_io(inputs, /datum/integrated_io, inputs_default, IC_INPUT)
 	setup_io(outputs, /datum/integrated_io, outputs_default, IC_OUTPUT)
 	setup_io(activators, /datum/integrated_io/activate, null, IC_ACTIVATOR)
 	LAZYSET(custom_materials, /datum/material/iron, w_class * SScircuit.cost_multiplier)
-	. = ..()
 
 /obj/item/integrated_circuit/proc/on_data_written() //Override this for special behaviour when new data gets pushed to the circuit.
 	return
@@ -96,7 +121,7 @@ a creative player the means to solve many problems.  Circuits are held inside an
 	QDEL_LIST(inputs)
 	QDEL_LIST(outputs)
 	QDEL_LIST(activators)
-	. = ..()
+	return ..()
 
 /obj/item/integrated_circuit/emp_act(severity)
 	for(var/k in 1 to inputs.len)
@@ -130,7 +155,6 @@ a creative player the means to solve many problems.  Circuits are held inside an
 	ui_interact(user)
 
 /obj/item/integrated_circuit/ui_interact(mob/user)
-	. = ..()
 	if(!check_interactivity(user))
 		return
 

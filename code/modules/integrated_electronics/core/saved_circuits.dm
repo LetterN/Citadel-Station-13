@@ -1,5 +1,7 @@
 // Helpers for saving/loading integrated circuits.
-
+// vertion defines.
+//#DEFINE CIRCUIT_SAVE_MIN 0
+//#define CIRCUIT_SAVE_LATEST 2
 
 // Saves type, modified name and modified inputs (if any) to a list
 // The list is converted to JSON down the line.

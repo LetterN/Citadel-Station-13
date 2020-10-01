@@ -7,8 +7,12 @@
 	flags_1 = CONDUCT_1
 	item_flags = NOBLUDGEON
 	w_class = WEIGHT_CLASS_SMALL
+
+	/// data to write (number, string, ref, null)
 	var/data_to_write = null
+	/// currently accepting refs?
 	var/accepting_refs = FALSE
+	/// are we copying some ref from a circuit?
 	var/copy_values = FALSE
 
 /obj/item/integrated_electronics/debugger/attack_self(mob/user)
@@ -22,16 +26,18 @@
 			accepting_refs = FALSE
 			copy_values = FALSE
 			new_data = stripped_input(user, "Now type in a string.","[src] string writing", no_trim = TRUE)
-			if(istext(new_data) && user.IsAdvancedToolUser())
-				data_to_write = new_data
-				to_chat(user, "<span class='notice'>You set \the [src]'s memory to \"[new_data]\".</span>")
+			if(!istext(new_data))
+				return
+			data_to_write = new_data
+			to_chat(user, "<span class='notice'>You set \the [src]'s memory to \"[new_data]\".</span>")
 		if("number")
 			accepting_refs = FALSE
 			copy_values = FALSE
 			new_data = input(user, "Now type in a number.","[src] number writing") as null|num
-			if(isnum(new_data) && user.IsAdvancedToolUser())
-				data_to_write = new_data
-				to_chat(user, "<span class='notice'>You set \the [src]'s memory to [new_data].</span>")
+			if(!isnum(new_data))
+				return
+			data_to_write = new_data
+			to_chat(user, "<span class='notice'>You set \the [src]'s memory to [new_data].</span>")
 		if("ref")
 			accepting_refs = TRUE
 			copy_values = FALSE
@@ -45,18 +51,19 @@
 		if("null")
 			data_to_write = null
 			copy_values = FALSE
+			accepting_refs = FALSE
 			to_chat(user, "<span class='notice'>You set \the [src]'s memory to absolutely nothing.</span>")
 
 /obj/item/integrated_electronics/debugger/afterattack(atom/target, mob/living/user, proximity)
-	. = ..()
 	if(accepting_refs && proximity)
 		data_to_write = WEAKREF(target)
 		visible_message("<span class='notice'>[user] slides \a [src]'s over \the [target].</span>")
 		to_chat(user, "<span class='notice'>You set \the [src]'s memory to a reference to [target.name] \[Ref\].  The ref scanner is \
 		now off.</span>")
 		accepting_refs = FALSE
+	. = ..()
 
-/obj/item/integrated_electronics/debugger/proc/write_data(var/datum/integrated_io/io, mob/user)
+/obj/item/integrated_electronics/debugger/proc/write_data(datum/integrated_io/io, mob/user)
 	//If the pin can take data:
 	if(io.io_type == DATA_CHANNEL)
 		//If the debugger is set to copy, copy the data in the pin onto it

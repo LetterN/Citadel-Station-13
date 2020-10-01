@@ -3,44 +3,70 @@
 
 /obj/item/electronic_assembly
 	name = "electronic assembly"
-	obj_flags = CAN_BE_HIT | UNIQUE_RENAME
 	desc = "It's a case, for building small electronics with."
-	w_class = WEIGHT_CLASS_SMALL
 	icon = 'icons/obj/assemblies/electronic_setups.dmi'
 	icon_state = "setup_small"
-	item_flags = NOBLUDGEON
 	custom_materials = null		// To be filled later
+	item_flags = NOBLUDGEON
 	datum_flags = DF_USE_TAG
-	var/list/assembly_components = list()
-	var/list/ckeys_allowed_to_scan = list() // Players who built the circuit can scan it as a ghost.
-	var/max_components = IC_MAX_SIZE_BASE
-	var/max_complexity = IC_COMPLEXITY_BASE
-	var/opened = TRUE
-	var/obj/item/stock_parts/cell/battery // Internal cell which most circuits need to work.
-	var/cell_type = /obj/item/stock_parts/cell
-	var/can_charge = TRUE //Can it be charged in a recharger?
-	var/can_fire_equipped = FALSE //Can it fire/throw weapons when the assembly is being held?
-	var/charge_sections = 4
-	var/charge_tick = FALSE
-	var/charge_delay = 4
-	var/use_cyborg_cell = TRUE
-	var/ext_next_use = 0
-	var/atom/collw
-	var/obj/item/card/id/access_card
-	var/allowed_circuit_action_flags = IC_ACTION_COMBAT | IC_ACTION_LONG_RANGE //which circuit flags are allowed
-	var/combat_circuits = 0 //number of combat cicuits in the assembly, used for diagnostic hud
-	var/long_range_circuits = 0 //number of long range cicuits in the assembly, used for diagnostic hud
-	var/prefered_hud_icon = "hudstat"		// Used by the AR circuit to change the hud icon.
-	var/creator // circuit creator if any
-	var/static/next_assembly_id = 0
+	obj_flags = CAN_BE_HIT | UNIQUE_RENAME
+	w_class = WEIGHT_CLASS_SMALL
 	hud_possible = list(DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_TRACK_HUD, DIAG_CIRCUIT_HUD) //diagnostic hud overlays
 	max_integrity = 50
 	pass_flags = 0
 	armor = list("melee" = 50, "bullet" = 70, "laser" = 70, "energy" = 100, "bomb" = 10, "bio" = 100, "rad" = 100, "fire" = 0, "acid" = 0)
 	anchored = FALSE
+
+	/// Circuitry bflags. which circuit flags are allowed
+	var/allowed_circuit_action_flags = IC_ACTION_COMBAT | IC_ACTION_LONG_RANGE
+	/// Circuit components on the assembly.
+	var/list/assembly_components = list()
+
+	/// Players who built the circuit can scan it as a ghost.
+	var/list/ckeys_allowed_to_scan = list()
+	/// circuit creator if any
+	var/creator
+
+	/// Max component cap
+	var/max_components = IC_MAX_SIZE_BASE
+	/// Max complex cap
+	var/max_complexity = IC_COMPLEXITY_BASE
+
+	/// Internal cell which most circuits need to work.
+	var/obj/item/stock_parts/cell/battery
+	/// Cell typecheck
+	var/cell_type = /obj/item/stock_parts/cell
+	var/charge_sections = 4
+	var/charge_tick = FALSE
+	var/charge_delay = 4
+	var/use_cyborg_cell = TRUE
+
+	/// Can it be charged in a recharger?
+	var/can_charge = TRUE
+	/// Can it fire/throw weapons when the assembly is being held?
+	var/can_fire_equipped = FALSE
+	var/ext_next_use = 0
+
+	/// Can anchor by wrench?
 	var/can_anchor = TRUE
+	/// Assembly open?
+	var/opened = TRUE
+	/// Buped onto door/window?
+	var/atom/collw
+	/// Try to open it with our "ID"
+	var/obj/item/card/id/access_card
+
+	/// number of combat cicuits in the assembly, used for diagnostic hud
+	var/combat_circuits = 0
+	/// number of long range cicuits in the assembly, used for diagnostic hud
+	var/long_range_circuits = 0
+	/// Used by the AR circuit to change the hud icon.
+	var/prefered_hud_icon = "hudstat"
+
+	/// Color for the assembly
 	var/detail_color = COLOR_ASSEMBLY_BLACK
-	var/list/color_whitelist = list( //This is just for checking that hacked colors aren't in the save data.
+	/// This is just for checking that hacked colors aren't in the save data.
+	var/list/color_whitelist = list(
 		COLOR_ASSEMBLY_BLACK,
 		COLOR_FLOORTILE_GRAY,
 		COLOR_ASSEMBLY_BGRAY,
@@ -57,12 +83,9 @@
 		COLOR_ASSEMBLY_LBLUE,
 		COLOR_ASSEMBLY_BLUE,
 		COLOR_ASSEMBLY_PURPLE
-		)
-
-/obj/item/electronic_assembly/New()
-	..()
-	src.max_components = round(max_components)
-	src.max_complexity = round(max_complexity)
+	)
+	var/static/next_assembly_id = 0
+	var/DEbug = TRUE //DELETE THIS PLEASE
 
 /obj/item/electronic_assembly/GenerateTag()
 	tag = "assembly_[next_assembly_id++]"
@@ -90,7 +113,7 @@
 
 /obj/item/electronic_assembly/Bump(atom/AM)
 	collw = AM
-	.=..()
+	. = ..()
 	if((istype(collw, /obj/machinery/door/airlock) ||  istype(collw, /obj/machinery/door/window)) && (!isnull(access_card)))
 		var/obj/machinery/door/D = collw
 		if(D.check_access(access_card))
@@ -98,7 +121,9 @@
 
 /obj/item/electronic_assembly/Initialize()
 	LAZYSET(custom_materials, /datum/material/iron, round((max_complexity + max_components) * 0.25) * SScircuit.cost_multiplier)
-	.=..()
+	. = ..()
+	src.max_components = round(max_components)
+	src.max_complexity = round(max_complexity)
 	START_PROCESSING(SScircuit, src)
 
 	//sets up diagnostic hud view
@@ -135,18 +160,49 @@
 	// Now spend it.
 	for(var/I in assembly_components)
 		var/obj/item/integrated_circuit/IC = I
-		if(IC.power_draw_idle)
-			if(!draw_power(IC.power_draw_idle))
-				IC.power_fail()
+		if(IC.power_draw_idle && !draw_power(IC.power_draw_idle))
+			IC.power_fail()
 
-/obj/item/electronic_assembly/interact(mob/user)
-	ui_interact(user)
+/obj/item/electronic_assembly/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "CircuitAssembly")
+		ui.open()
 
-/obj/item/electronic_assembly/ui_interact(mob/user)
-	. = ..()
-	if(!check_interactivity(user))
+	if(DEbug)
 		return
+	oldshit(user)
 
+/obj/item/electronic_assembly/ui_data(mob/user)
+	. = list()
+
+	if(battery)
+		.["hasBattery"] = battery ? TRUE : FALSE
+		.["cellCharge"] = battery.charge
+		.["cellMaxCharge"] = battery.maxcharge
+
+	.["partSize"] = return_total_size()
+	.["partMaxSize"] = max_components
+	.["partCompex"] = return_total_complexity()
+	.["partMaxComplex"] = max_complexity
+	.["componentsBuiltIn"] = null
+
+	.["ic_components"] = list()
+	.["componentsBuiltIn"] = list()
+
+	for(var/c in assembly_components)
+		var/obj/item/integrated_circuit/circuit = c
+		var/list/dat = list()
+
+		dat["name"] = circuit.displayed_name
+		dat["ref"] = REF(circuit)
+
+		if(!circuit.removable)
+			.["componentsBuiltIn"] += list(dat) //list(list()) for json because byond concats
+			continue
+		.["ic_components"] += list(dat) //list(list()) for json because byond concats
+
+/obj/item/electronic_assembly/proc/oldshit(mob/user)
 	var/total_part_size = return_total_size()
 	var/total_complexity = return_total_complexity()
 	var/HTML = ""
@@ -161,8 +217,6 @@
 	else
 		HTML += "<span class='danger'>No power cell detected!</span>"
 	HTML += "<br><br>"
-
-
 
 	HTML += "Components:"
 
@@ -376,9 +430,9 @@
 
 	//increment numbers for diagnostic hud
 	if(component.action_flags & IC_ACTION_COMBAT)
-		combat_circuits += 1;
+		combat_circuits++
 	if(component.action_flags & IC_ACTION_LONG_RANGE)
-		long_range_circuits += 1;
+		long_range_circuits++
 
 	//diagnostic hud update
 	diag_hud_set_circuitstat()
@@ -615,8 +669,7 @@
 /obj/item/electronic_assembly/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(anchored)
 		attack_self(user)
-		return
-	..()
+		return //postatack.
 
 /obj/item/electronic_assembly/can_trigger_gun(mob/living/user) //sanity checks against pocket death weapon circuits
 	if(!can_fire_equipped || !user.is_holding(src))
@@ -832,7 +885,7 @@
 	max_complexity = IC_COMPLEXITY_BASE / 2
 
 /obj/item/electronic_assembly/wallmount/proc/mount_assembly(turf/on_wall, mob/user) //Yeah, this is admittedly just an abridged and kitbashed version of the wallframe attach procs.
-	if(get_dist(on_wall,user)>1)
+	if(get_dist(on_wall,user) > 1)
 		return
 	var/ndir = get_dir(on_wall, user)
 	if(!(ndir in GLOB.cardinals))
