@@ -194,7 +194,7 @@
 	if(user.pulling && user.grab_state == GRAB_AGGRESSIVE && user.voremode)
 		if(ismob(user.pulling))
 			var/mob/P = user.pulling
-			user.vore_attack(user, P, src) // User, Pulled, Predator target (which can be user, pulling, or src)
+			INVOKE_ASYNC(user, .proc/vore_attack, user, P, src)
 			return
 
 	if(user == src) //we want to be able to self click if we're voracious
@@ -218,59 +218,68 @@
 /mob/living/proc/grippedby(mob/living/carbon/user, instant = FALSE)
 	if(user.grab_state < GRAB_KILL)
 		user.DelayNextAction(CLICK_CD_GRABBING, flush = TRUE)
-		playsound(src, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
+		var/sound_to_play = 'sound/weapons/thudswoosh.ogg'
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+			if(H.dna.species.grab_sound)
+				sound_to_play = H.dna.species.grab_sound
+		playsound(src.loc, sound_to_play, 50, TRUE, -1)
 
 		if(user.grab_state) //only the first upgrade is instantaneous
 			var/old_grab_state = user.grab_state
 			var/grab_upgrade_time = instant ? 0 : 30
 			visible_message("<span class='danger'>[user] starts to tighten [user.p_their()] grip on [src]!</span>", \
-				"<span class='userdanger'>[user] starts to tighten [user.p_their()] grip on you!</span>", target = user,
-				target_message = "<span class='danger'>You start to tighten your grip on [src]!</span>")
+							"<span class='userdanger'>[user] starts to tighten [user.p_their()] grip on you!</span>", "<span class='hear'>You hear aggressive shuffling!</span>", null, user)
+			to_chat(user, "<span class='danger'>You start to tighten your grip on [src]!</span>")
 			switch(user.grab_state)
 				if(GRAB_AGGRESSIVE)
 					log_combat(user, src, "attempted to neck grab", addition="neck grab")
 				if(GRAB_NECK)
 					log_combat(user, src, "attempted to strangle", addition="kill grab")
 			if(!do_mob(user, src, grab_upgrade_time))
-				return 0
-			if(!user.pulling || user.pulling != src || user.grab_state != old_grab_state || user.a_intent != INTENT_GRAB)
-				return 0
+				return FALSE
 			if(user.voremode && user.grab_state == GRAB_AGGRESSIVE)
-				return 0
+				return FALSE
+			if(!user.pulling || user.pulling != src || user.grab_state != old_grab_state)
+				return FALSE
+			if(user.a_intent != INTENT_GRAB)
+				to_chat(user, "<span class='warning'>You must be on grab intent to upgrade your grab further!</span>")
+				return FALSE
 		user.setGrabState(user.grab_state + 1)
 		switch(user.grab_state)
 			if(GRAB_AGGRESSIVE)
 				var/add_log = ""
 				if(HAS_TRAIT(user, TRAIT_PACIFISM))
-					visible_message("<span class='danger'>[user] has firmly gripped [src]!</span>",
-						"<span class='danger'>[user] has firmly gripped you!</span>", target = user,
-						target_message = "<span class='danger'>You have firmly gripped [src]!</span>")
+					visible_message("<span class='danger'>[user] firmly grips [src]!</span>",
+									"<span class='danger'>[user] firmly grips you!</span>", "<span class='hear'>You hear aggressive shuffling!</span>", null, user)
+					to_chat(user, "<span class='danger'>You firmly grip [src]!</span>")
 					add_log = " (pacifist)"
 				else
-					visible_message("<span class='danger'>[user] has grabbed [src] aggressively!</span>", \
-									"<span class='userdanger'>[user] has grabbed you aggressively!</span>", target = user, \
-									target_message = "<span class='danger'>You have grabbed [src] aggressively!</span>")
+					visible_message("<span class='danger'>[user] grabs [src] aggressively!</span>", \
+									"<span class='userdanger'>[user] grabs you aggressively!</span>", "<span class='hear'>You hear aggressive shuffling!</span>", null, user)
+					to_chat(user, "<span class='danger'>You grab [src] aggressively!</span>")
 					update_mobility()
+				drop_all_held_items()
 				stop_pulling()
 				log_combat(user, src, "grabbed", addition="aggressive grab[add_log]")
 			if(GRAB_NECK)
 				log_combat(user, src, "grabbed", addition="neck grab")
-				visible_message("<span class='danger'>[user] has grabbed [src] by the neck!</span>",\
-								"<span class='userdanger'>[user] has grabbed you by the neck!</span>", target = user, \
-								target_message = "<span class='danger'>You have grabbed [src] by the neck!</span>")
-				update_mobility() //we fall down
+				visible_message("<span class='danger'>[user] grabs [src] by the neck!</span>",\
+								"<span class='userdanger'>[user] grabs you by the neck!</span>", "<span class='hear'>You hear aggressive shuffling!</span>", null, user)
+				to_chat(user, "<span class='danger'>You grab [src] by the neck!</span>")
+				update_mobility()
 				if(!buckled && !density)
 					Move(user.loc)
 			if(GRAB_KILL)
 				log_combat(user, src, "strangled", addition="kill grab")
 				visible_message("<span class='danger'>[user] is strangling [src]!</span>", \
-								"<span class='userdanger'>[user] is strangling you!</span>", target = user, \
-								target_message = "<span class='danger'>You are strangling [src]!</span>")
-				update_mobility() //we fall down
+								"<span class='userdanger'>[user] is strangling you!</span>", "<span class='hear'>You hear aggressive shuffling!</span>", null, user)
+				to_chat(user, "<span class='danger'>You're strangling [src]!</span>")
+				update_mobility()
 				if(!buckled && !density)
 					Move(user.loc)
 		user.set_pull_offsets(src, grab_state)
-		return 1
+		return TRUE
 
 /mob/living/on_attack_hand(mob/user, act_intent = user.a_intent, attackchain_flags)
 	..() //Ignoring parent return value here.

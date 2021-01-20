@@ -273,11 +273,6 @@
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/critfail()
-	..()
-	if(reagents)
-		DISABLE_BITFIELD(reagents.reagents_holder_flags, NO_REACT)
-
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/can_attach(obj/mecha/medical/M)
 	if(..())
 		if(istype(M))

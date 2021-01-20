@@ -11,24 +11,23 @@
 	add_verb(src, /mob/living/carbon/human/verb/underwear_toggle)
 	add_verb(src, /mob/living/verb/subtle)
 	add_verb(src, /mob/living/verb/subtler)
+
 	//initialize limbs first
 	create_bodyparts()
 
-	//initialize dna. for spawned humans; overwritten by other code
-	create_dna(src)
-	randomize_human(src)
-	dna.initialize_dna()
+	setup_human_dna()
 
 	if(dna.species)
-		set_species(dna.species.type)
+		INVOKE_ASYNC(src, .proc/set_species, dna.species.type)
 
 	//initialise organs
 	create_internal_organs() //most of it is done in set_species now, this is only for parent call
 	physiology = new()
 
+	. = ..()
+
 	AddComponent(/datum/component/personal_crafting)
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_HUMAN, 1, 2)
-	. = ..()
 
 	if(CONFIG_GET(flag/disable_stambuffer))
 		enable_intentional_sprint_mode()
@@ -36,6 +35,11 @@
 	RegisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT, /atom.proc/clean_blood)
 	GLOB.human_list += src
 
+/mob/living/carbon/human/proc/setup_human_dna()
+	//initialize dna. for spawned humans; overwritten by other code
+	create_dna(src)
+	randomize_human(src)
+	dna.initialize_dna()
 
 /mob/living/carbon/human/ComponentInitialize()
 	. = ..()
@@ -51,6 +55,13 @@
 	QDEL_NULL_LIST(vore_organs) // CITADEL EDIT belly stuff
 	GLOB.human_list -= src
 	return ..()
+
+/mob/living/carbon/human/ZImpactDamage(turf/T, levels)
+	if(levels > 1) // falling off one level //!HAS_TRAIT(src, TRAIT_FREERUNNING) ||
+		return ..()
+	visible_message("<span class='danger'>[src] makes a hard landing on [T] but remains unharmed from the fall.</span>", \
+					"<span class='userdanger'>You brace for the fall. You make a hard landing on [T] but remain unharmed.</span>")
+	DefaultCombatKnockdown(levels * 50)
 
 /mob/living/carbon/human/prepare_data_huds()
 	//Update med hud images...
@@ -212,11 +223,12 @@
 // called when something steps onto a human
 // this could be made more general, but for now just handle mulebot
 /mob/living/carbon/human/Crossed(atom/movable/AM)
-	SEND_SIGNAL(src, COMSIG_MOVABLE_CROSSED, AM)
 	var/mob/living/simple_animal/bot/mulebot/MB = AM
 	if(istype(MB))
 		MB.RunOver(src)
 
+
+	. = ..()
 	spreadFire(AM)
 
 /mob/living/carbon/human/Topic(href, href_list)

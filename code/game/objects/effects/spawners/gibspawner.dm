@@ -43,19 +43,7 @@
 
 	else if(gib_mob_type)
 		var/mob/living/temp_mob = new gib_mob_type(src) //generate a fake mob so that we pull the right type of DNA for the gibs.
-		if(gib_mob_species)
-			if(ishuman(temp_mob))
-				var/mob/living/carbon/human/H = temp_mob
-				H.set_species(gib_mob_species)
-				dna_to_add = temp_mob.get_blood_dna_list()
-				if(H.dna.species.use_skintones)
-					body_coloring = SKINTONE2HEX(H.skin_tone)
-				else
-					body_coloring = "#[H.dna.features["mcolor"]]"
-			else
-				dna_to_add = temp_mob.get_blood_dna_list()
-		else if(!issilicon(temp_mob))
-			dna_to_add = temp_mob.get_blood_dna_list()
+		dna_to_add = temp_mob.get_blood_dna_list()
 		qdel(temp_mob)
 	else
 		dna_to_add = list("Non-human DNA" = random_blood_type()) //else, generate a random bloodtype for it.

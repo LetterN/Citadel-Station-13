@@ -139,7 +139,7 @@ obj/item/ammo_casing/shotgun/executioner
 
 /obj/item/ammo_casing/shotgun/dart/noreact/Initialize()
 	. = ..()
-	ENABLE_BITFIELD(reagents.reagents_holder_flags, NO_REACT)
+	ENABLE_BITFIELD(reagents.flags, NO_REACT)
 
 /obj/item/ammo_casing/shotgun/dart/bioterror
 	desc = "A shotgun dart filled with an obscene amount of lethal reagents. God help whoever is shot with this."

@@ -364,7 +364,7 @@
 			opened = TRUE
 			spillable = !screwdrivered
 			reagent_flags = OPENCONTAINER
-			ENABLE_BITFIELD(reagents.reagents_holder_flags, OPENCONTAINER)
+			ENABLE_BITFIELD(reagents.flags, OPENCONTAINER)
 			icon_state = screwdrivered ? "coconut_carved" : "coconut_chopped"
 			desc = "A coconut. [screwdrivered ? "This one's got a hole in it" : "This one's sliced open, with all its delicious contents for your eyes to savour"]."
 			playsound(user, W.hitsound, 50, 1, -1)

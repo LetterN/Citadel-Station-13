@@ -69,7 +69,7 @@
 	START_PROCESSING(SSfastprocess, src)
 	create_reagents(1000)
 	if(noreact_reagents)
-		reagents.reagents_holder_flags |= NO_REACT
+		reagents.flags |= NO_REACT
 	wires = new /datum/wires/poolcontroller(src)
 	scan_things()
 

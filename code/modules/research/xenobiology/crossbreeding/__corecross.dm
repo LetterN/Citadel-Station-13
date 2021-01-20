@@ -134,7 +134,7 @@ To add a crossbreed:
 
 /obj/item/slimecrossbeaker/autoinjector/Initialize()
 	. = ..()
-	reagents.reagents_holder_flags = DRAWABLE // Cannot be refilled, since it's basically an autoinjector!
+	reagents.flags = DRAWABLE // Cannot be refilled, since it's basically an autoinjector!
 
 /obj/item/slimecrossbeaker/autoinjector/attack(mob/living/M, mob/user)
 	if(!reagents.total_volume)
@@ -178,7 +178,7 @@ To add a crossbreed:
 
 /obj/item/slimecrossbeaker/autoinjector/peaceandlove/Initialize()
 	. = ..()
-	reagents.reagents_holder_flags = NONE // It won't be *that* easy to get your hands on pax.
+	reagents.flags = NONE // It won't be *that* easy to get your hands on pax.
 
 /obj/item/slimecrossbeaker/autoinjector/slimestimulant
 	name = "invigorating gel"

@@ -6,14 +6,14 @@
 	reagent = new reagent()
 
 
-/datum/blobstrain/reagent/attack_living(var/mob/living/L)
+/datum/blobstrain/reagent/attack_living(mob/living/L)
 	var/mob_protection = L.get_permeability_protection()
-	reagent.reaction_mob(L, VAPOR, 25, 1, mob_protection, overmind)
+	reagent.expose_mob(L, VAPOR, 25, 1, mob_protection, overmind)
 	send_message(L)
 
 /datum/blobstrain/reagent/blobbernaut_attack(mob/living/L)
 	var/mob_protection = L.get_permeability_protection()
-	reagent.reaction_mob(L, VAPOR, 20, 0, mob_protection, overmind)//this will do between 10 and 20 damage(reduced by mob protection), depending on chemical, plus 4 from base brute damage.
+	reagent.expose_mob(L, VAPOR, 20, 0, mob_protection, overmind)//this will do between 10 and 20 damage(reduced by mob protection), depending on chemical, plus 4 from base brute damage.
 
 /datum/blobstrain/reagent/on_sporedeath(mob/living/spore)
 	spore.reagents.add_reagent(reagent.type, 10)

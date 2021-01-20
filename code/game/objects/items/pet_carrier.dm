@@ -265,9 +265,9 @@
 	..()
 	if(reagents)
 		if(open)
-			reagents.reagents_holder_flags = OPENCONTAINER
+			reagents.flags = OPENCONTAINER
 		else
-			reagents.reagents_holder_flags = NONE
+			reagents.flags = NONE
 
 /obj/item/pet_carrier/bluespace/update_icon_state()
 	if(open)

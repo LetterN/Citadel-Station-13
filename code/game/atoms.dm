@@ -159,7 +159,7 @@
  * * [/turf/open/space/proc/Initialize]
  */
 /atom/proc/Initialize(mapload, ...)
-	SHOULD_NOT_SLEEP(TRUE)
+	// SHOULD_NOT_SLEEP(TRUE)
 	SHOULD_CALL_PARENT(TRUE)
 	if(flags_1 & INITIALIZED_1)
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
@@ -385,22 +385,49 @@
 
 /atom/proc/Bumped(atom/movable/AM)
 	set waitfor = FALSE
+	// SEND_SIGNAL(src, COMSIG_ATOM_BUMPED, AM)
 
-// Convenience procs to see if a container is open for chemistry handling
+/// Convenience proc to see if a container is open for chemistry handling
 /atom/proc/is_open_container()
 	return is_refillable() && is_drainable()
 
-/atom/proc/is_injectable(allowmobs = TRUE)
-	return reagents && (reagents.reagents_holder_flags & (INJECTABLE | REFILLABLE))
+/// Is this atom injectable into other atoms
+/atom/proc/is_injectable(mob/user, allowmobs = TRUE)
+	return reagents && (reagents.flags & (INJECTABLE | REFILLABLE))
 
-/atom/proc/is_drawable(allowmobs = TRUE)
-	return reagents && (reagents.reagents_holder_flags & (DRAWABLE | DRAINABLE))
+/// Can we draw from this atom with an injectable atom
+/atom/proc/is_drawable(mob/user, allowmobs = TRUE)
+	return reagents && (reagents.flags & (DRAWABLE | DRAINABLE))
 
+/// Can this atoms reagents be refilled
 /atom/proc/is_refillable()
-	return reagents && (reagents.reagents_holder_flags & REFILLABLE)
+	return reagents && (reagents.flags & REFILLABLE)
 
+/// Is this atom drainable of reagents
 /atom/proc/is_drainable()
-	return reagents && (reagents.reagents_holder_flags & DRAINABLE)
+	return reagents && (reagents.flags & DRAINABLE)
+
+/** Handles exposing this atom to a list of reagents.
+ *
+ * Sends COMSIG_ATOM_EXPOSE_REAGENTS
+ * Calls expose_atom() for every reagent in the reagent list.
+ *
+ * Arguments:
+ * - [reagents][/list]: The list of reagents the atom is being exposed to.
+ * - [source][/datum/reagents]: The reagent holder the reagents are being sourced from.
+ * - methods: How the atom is being exposed to the reagents. Bitflags.
+ * - volume_modifier: Volume multiplier.
+ * - show_message: Whether to display anything to mobs when they are exposed.
+ */
+/atom/proc/expose_reagents(list/reagents, datum/reagents/source, methods=TOUCH, volume_modifier=1, show_message=TRUE)
+	. = SEND_SIGNAL(src, COMSIG_ATOM_EXPOSE_REAGENTS, reagents, source, methods, volume_modifier, show_message)
+	if(. & COMPONENT_NO_EXPOSE_REAGENTS)
+		return
+
+	SEND_SIGNAL(source, COMSIG_REAGENTS_EXPOSE_ATOM, src, reagents, methods, volume_modifier, show_message)
+	for(var/reagent in reagents)
+		var/datum/reagent/R = reagent
+		. |= R.expose_atom(src, reagents[R])
 
 
 /atom/proc/AllowDrop()
@@ -435,30 +462,33 @@
 		return TRUE
 	return FALSE
 
+/**
+ * Get the name of this object for examine
+ *
+ * You can override what is returned from this proc by registering to listen for the
+ * [COMSIG_ATOM_GET_EXAMINE_NAME] signal
+ */
 /atom/proc/get_examine_name(mob/user)
 	. = "\a [src]"
 	var/list/override = list(gender == PLURAL ? "some" : "a", " ", "[name]")
 	if(article)
 		. = "[article] [src]"
 		override[EXAMINE_POSITION_ARTICLE] = article
-
-	var/should_override = FALSE
-
 	if(SEND_SIGNAL(src, COMSIG_ATOM_GET_EXAMINE_NAME, user, override) & COMPONENT_EXNAME_CHANGED)
-		should_override = TRUE
-
-
-	if(blood_DNA && !istype(src, /obj/effect/decal))
-		override[EXAMINE_POSITION_BEFORE] = " blood-stained "
-		should_override = TRUE
-
-	if(should_override)
 		. = override.Join("")
 
 ///Generate the full examine string of this atom (including icon for goonchat)
 /atom/proc/get_examine_string(mob/user, thats = FALSE)
 	return "[icon2html(src, user)] [thats? "That's ":""][get_examine_name(user)]"
 
+/**
+ * Called when a mob examines (shift click or verb) this atom
+ *
+ * Default behaviour is to get the name and icon of the object and it's reagents where
+ * the [TRANSPARENT] flag is set on the reagents holder
+ *
+ * Produces a signal [COMSIG_PARENT_EXAMINE]
+ */
 /atom/proc/examine(mob/user)
 	. = list("[get_examine_string(user, TRUE)].")
 
@@ -472,7 +502,7 @@
 			materials_list += "[M.name]"
 		. += "<u>It is made out of [english_list(materials_list)]</u>."
 	if(reagents)
-		if(reagents.reagents_holder_flags & TRANSPARENT)
+		if(reagents.flags & TRANSPARENT)
 			. += "It contains:"
 			if(length(reagents.reagent_list))
 				if(user.can_see_reagents()) //Show each individual reagent
@@ -485,7 +515,7 @@
 					. += "[total_volume] units of various reagents"
 			else
 				. += "Nothing."
-		else if(reagents.reagents_holder_flags & AMOUNT_VISIBLE)
+		else if(reagents.flags & AMOUNT_VISIBLE)
 			if(reagents.total_volume)
 				. += "<span class='notice'>It has [reagents.total_volume] unit\s left.</span>"
 			else
