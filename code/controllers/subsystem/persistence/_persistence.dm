@@ -352,13 +352,22 @@ SUBSYSTEM_DEF(persistence)
 		ending_human.client.prefs.save_character()
 
 /datum/controller/subsystem/persistence/proc/SaveTCGCards()
-	for(var/i in GLOB.joined_player_list)
+	var/json_file = file("data/TCG_persistent.json")
+	var/list/savfil = list()
+	// first we load it as an arry
+	if(fexists(json_file))
+		savfil = json_decode(file2text(json_file))
+
+	// cannot save if you're dead
+	for(var/i in GLOB.mob_living_list)
 		var/mob/living/carbon/human/ending_human = get_mob_by_ckey(i)
-		if(!istype(ending_human) || !ending_human.mind || !ending_human.client || !ending_human.client.prefs || !ending_human.client.prefs.tcg_cards)
+		// bare minimum we NEED the client ckey
+		if(!istype(ending_human) || !ending_human.mind || !ending_human.client)
 			continue
 
 		var/mob/living/carbon/human/original_human = ending_human.mind.original_character
-		if(!original_human || original_human.stat == DEAD || !(original_human == ending_human))
+		if(!original_human || !(original_human == ending_human))
 			continue
 
-		ending_human.SaveTCGCards()
+		savfil[ckey(ending_human.ckey)][ending_human.real_name] = ending_human.get_tcg_cards()
+	WRITE_FILE(json_file, json_encode(savfil))

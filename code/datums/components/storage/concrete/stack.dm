@@ -1,7 +1,6 @@
 //Stack-only storage.
 /datum/component/storage/concrete/stack
 	display_numerical_stacking = TRUE
-	storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
 	var/max_combined_stack_amount = 300
 	max_w_class = WEIGHT_CLASS_NORMAL
 	max_combined_w_class = WEIGHT_CLASS_NORMAL * 14
@@ -40,7 +39,8 @@
 			_S.add(can_insert)
 			S.use(can_insert, TRUE)
 			return TRUE
-	return ..(S.change_stack(null, can_insert), override)
+	I = S.change_stack(null, can_insert)
+	return ..()
 
 /datum/component/storage/concrete/stack/remove_from_storage(obj/item/I, atom/new_location)
 	var/atom/real_location = real_location()

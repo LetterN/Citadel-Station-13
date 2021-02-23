@@ -8,9 +8,9 @@
 	max_combined_w_class = WEIGHT_CLASS_TINY * 30
 	///The deck that the card pile is using for FAIR PLAY.
 
-/datum/component/storage/concrete/tcg/can_be_inserted(obj/item/I, stop_messages, mob/M)
+/datum/component/storage/concrete/tcg/Initialize()
 	. = ..()
-	return istype(I, /obj/item/tcg_card)
+	set_holdable(list(/obj/item/tcgcard))
 
 /datum/component/storage/concrete/tcg/PostTransfer()
 	. = ..()
@@ -20,7 +20,7 @@
 	. = ..()
 	handle_empty_deck()
 
-/datum/component/storage/concrete/tcg/ui_show(mob/M)
+/datum/component/storage/concrete/tcg/show_to(mob/M)
 	. = ..()
 	M.visible_message("<span class='notice'>[M] starts to look through the contents of \the [parent]!</span>", \
 					"<span class='notice'>You begin looking into the contents of \the [parent]!</span>")
@@ -42,7 +42,7 @@
 	//You can't have a deck of one card!
 	if(contents.len == 1)
 		var/obj/item/tcgcard_deck/deck = parent
-		var/obj/item/tcg_card/card = contents[1]
+		var/obj/item/tcgcard/card = contents[1]
 		remove_from_storage(card, card.drop_location())
 		card.flipped = deck.flipped
 		card.update_icon_state()

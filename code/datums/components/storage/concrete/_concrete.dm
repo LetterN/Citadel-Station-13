@@ -7,8 +7,6 @@
 	can_transfer = TRUE
 	var/drop_all_on_deconstruct = TRUE
 	var/drop_all_on_destroy = FALSE
-	var/drop_all_on_break = FALSE
-	var/unlock_on_break = FALSE
 	var/transfer_contents_on_component_transfer = FALSE
 	var/list/datum/component/storage/slaves = list()
 
@@ -19,7 +17,6 @@
 	. = ..()
 	RegisterSignal(parent, COMSIG_ATOM_CONTENTS_DEL, .proc/on_contents_del)
 	RegisterSignal(parent, COMSIG_OBJ_DECONSTRUCT, .proc/on_deconstruct)
-	RegisterSignal(parent, COMSIG_OBJ_BREAK, .proc/on_break)
 
 /datum/component/storage/concrete/Destroy()
 	var/atom/real_location = real_location()
@@ -60,13 +57,13 @@
 		_contents_limbo = null
 	if(_user_limbo)
 		for(var/i in _user_limbo)
-			ui_show(i)
+			show_to(i)
 		_user_limbo = null
 
 /datum/component/storage/concrete/_insert_physical_item(obj/item/I, override = FALSE)
 	. = TRUE
 	var/atom/real_location = real_location()
-	if(I.loc != real_location && real_location)
+	if(I.loc != real_location)
 		I.forceMove(real_location)
 	refresh_mob_views()
 
@@ -104,12 +101,6 @@
 	if(drop_all_on_deconstruct)
 		do_quick_empty()
 
-/datum/component/storage/concrete/proc/on_break(datum/source, damage_flag)
-	if(drop_all_on_break)
-		do_quick_empty()
-	if(unlock_on_break)
-		set_locked(source, FALSE)
-
 /datum/component/storage/concrete/can_see_contents()
 	. = ..()
 	for(var/i in slaves)
@@ -134,9 +125,12 @@
 	if(ismob(parent.loc) && isitem(AM))
 		var/obj/item/I = AM
 		var/mob/M = parent.loc
-		I.dropped(M)
+		I.dropped(M, TRUE)
+		// I.item_flags &= ~IN_STORAGE
 	if(new_location)
-		AM.forceMove(new_location)		// exited comsig will handle removal reset.
+		//Reset the items values
+		_removal_reset(AM)
+		AM.forceMove(new_location)
 		//We don't want to call this if the item is being destroyed
 		AM.on_exit_storage(src)
 	else
@@ -180,6 +174,7 @@
 				I.forceMove(parent.drop_location())
 		return FALSE
 	I.on_enter_storage(master)
+	// I.item_flags |= IN_STORAGE
 	refresh_mob_views()
 	I.mouse_opacity = MOUSE_OPACITY_OPAQUE //So you can click on the area around the item to equip it, instead of having to pixel hunt
 	if(M)
