@@ -61,6 +61,13 @@
 	var/screen_start_y = 2
 	//End
 
+	//Begin Cit Edit
+	var/volumetric_mode = FALSE
+	var/try_volumetric_mode = TRUE
+	var/list/ui_item_blocks = list()
+	var/obj/screen/storage/left/left						//close button object
+	//End CE
+
 /datum/component/storage/Initialize(datum/component/storage/concrete/master)
 	if(!isatom(parent))
 		return COMPONENT_INCOMPATIBLE
@@ -103,7 +110,6 @@
 
 	RegisterSignal(parent, COMSIG_MOVABLE_POST_THROW, .proc/close_all)
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, .proc/on_move)
-	// RegisterSignal(parent, COMSIG_MOVABLE_MOVED, .proc/check_views)
 
 	RegisterSignal(parent, COMSIG_CLICK_ALT, .proc/on_alt_click)
 	RegisterSignal(parent, COMSIG_MOUSEDROP_ONTO, .proc/mousedrop_onto)
@@ -350,6 +356,9 @@
 
 	var/columns = clamp(max_items, 1, screen_max_columns)
 	var/rows = clamp(CEILING(adjusted_contents / columns, 1), 1, screen_max_rows)
+	if(try_volumetric_mode && volumetric_orient_objs(rows, columns, numbered_contents))
+		volumetric_mode = TRUE
+		return
 	standard_orient_objs(rows, columns, numbered_contents)
 
 //This proc draws out the inventory and places the items on it. It uses the standard position.

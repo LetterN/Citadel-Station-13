@@ -1,121 +1,55 @@
 /**
-  * Generates a list of numbered_display datums for the numerical display system.
-  */
-/datum/component/storage/proc/_process_numerical_display()
-	. = list()
-	for(var/obj/item/I in accessible_items())
-		if(QDELETED(I))
-			continue
-		if(!.[I.type])
-			.[I.type] = new /datum/numbered_display(I, 1)
-		else
-			var/datum/numbered_display/ND = .[I.type]
-			ND.number++
-	. = sortTim(., /proc/cmp_numbered_displays_name_asc, associative = TRUE)
-
-/**
-  * Orients all objects in legacy mode, and returns the objects to show to the user.
-  */
-/datum/component/storage/proc/orient2hud_legacy(mob/user, maxcolumns)
-	. = list()
-	var/list/accessible_contents = accessible_items()
-	var/adjusted_contents = length(accessible_contents)
-
-	//Numbered contents display
-	var/list/datum/numbered_display/numbered_contents
-	if(display_numerical_stacking)
-		numbered_contents = _process_numerical_display()
-		adjusted_contents = numbered_contents.len
-
-	var/columns = clamp(max_items, 1, maxcolumns ? maxcolumns : screen_max_columns)
-	var/rows = clamp(CEILING(adjusted_contents / columns, 1), 1, screen_max_rows)
-
-	// First, boxes.
-	ui_boxes = get_ui_boxes()
-	ui_boxes.screen_loc = "[screen_start_x]:[screen_pixel_x],[screen_start_y]:[screen_pixel_y] to [screen_start_x+columns-1]:[screen_pixel_x],[screen_start_y+rows-1]:[screen_pixel_y]"
-	. += ui_boxes
-	// Then, closer.
-	ui_close = get_ui_close()
-	ui_close.screen_loc = "[screen_start_x + columns]:[screen_pixel_x],[screen_start_y]:[screen_pixel_y]"
-	. += ui_close
-	// Then orient the actual items.
-	var/cx = screen_start_x
-	var/cy = screen_start_y
-	if(islist(numbered_contents))
-		for(var/type in numbered_contents)
-			var/datum/numbered_display/ND = numbered_contents[type]
-			ND.sample_object.mouse_opacity = MOUSE_OPACITY_OPAQUE
-			ND.sample_object.screen_loc = "[cx]:[screen_pixel_x],[cy]:[screen_pixel_y]"
-			ND.sample_object.maptext = "<font color='white'>[(ND.number > 1)? "[ND.number]" : ""]</font>"
-			ND.sample_object.layer = ABOVE_HUD_LAYER
-			ND.sample_object.plane = ABOVE_HUD_PLANE
-			. += ND.sample_object
-			cx++
-			if(cx - screen_start_x >= columns)
-				cx = screen_start_x
-				cy++
-				if(cy - screen_start_y >= rows)
-					break
-	else
-		for(var/obj/O in accessible_items())
-			if(QDELETED(O))
-				continue
-			O.mouse_opacity = MOUSE_OPACITY_OPAQUE //This is here so storage items that spawn with contents correctly have the "click around item to equip"
-			O.screen_loc = "[cx]:[screen_pixel_x],[cy]:[screen_pixel_y]"
-			O.maptext = ""
-			O.layer = ABOVE_HUD_LAYER
-			O.plane = ABOVE_HUD_PLANE
-			. += O
-			cx++
-			if(cx - screen_start_x >= columns)
-				cx = screen_start_x
-				cy++
-				if(cy - screen_start_y >= rows)
-					break
-
-/**
   * Orients all objects in .. volumetric mode. Does not support numerical display!
   */
-/datum/component/storage/proc/orient2hud_volumetric(mob/user, maxcolumns)
-	. = list()
+/datum/component/storage/proc/volumetric_orient_objs(rows_i, cols, list/obj/item/numerical_display_contents)
+	var/mob/user
 
 	// Generate ui_item_blocks for missing ones and render+orient.
-	var/list/atom/contents = accessible_items()
+	var/atom/real_location = real_location()
+
 	// our volume
-	var/our_volume = get_max_volume()
-	var/horizontal_pixels = (maxcolumns * world.icon_size) - (VOLUMETRIC_STORAGE_EDGE_PADDING * 2)
+	var/max_volume = AUTO_SCALE_STORAGE_VOLUME(max_w_class, max_combined_w_class)
+	var/horizontal_pixels = (cols * world.icon_size) - (VOLUMETRIC_STORAGE_EDGE_PADDING * 2)
 	var/max_horizontal_pixels = horizontal_pixels * screen_max_rows
-	// sigh loopmania time
+
+	// Total used volume on the storage cmp
 	var/used = 0
+
 	// define outside for performance
 	var/volume
 	var/list/volume_by_item = list()
 	var/list/percentage_by_item = list()
-	for(var/obj/item/I in contents)
+
+	/// Is the storage overloaded?
+	var/overrun = FALSE
+
+	for(var/obj/item/I in real_location.contents)
 		if(QDELETED(I))
 			continue
 		volume = I.get_w_volume()
 		used += volume
 		volume_by_item[I] = volume
-		percentage_by_item[I] = volume / get_max_volume()
-	var/padding_pixels = ((length(percentage_by_item) - 1) * VOLUMETRIC_STORAGE_ITEM_PADDING) + VOLUMETRIC_STORAGE_EDGE_PADDING * 2
+		percentage_by_item[I] = volume / max_volume
+
+
+	if(used > max_volume)
+		// congratulations we are now in overrun mode. everything will be crammed to minimum storage pixels.
+		to_chat(user, "<span class='warning'>[parent] rendered in overrun mode due to more items inside than the maximum volume supports.</span>")
+		overrun = TRUE
+
+	var/padding_pixels = ((length(percentage_by_item) - 1) * VOLUMETRIC_STORAGE_ITEM_PADDING) + (VOLUMETRIC_STORAGE_EDGE_PADDING * 2)
 	var/min_pixels = (MINIMUM_PIXELS_PER_ITEM * length(percentage_by_item)) + padding_pixels
+
 	// do the check for fallback for when someone has too much gamer gear
-	if((min_pixels) > (max_horizontal_pixels + 4))	// 4 pixel grace zone
+	if(min_pixels > (max_horizontal_pixels + 4))	// 4 pixel grace zone
 		to_chat(user, "<span class='warning'>[parent] was showed to you in legacy mode due to your items overrunning the three row limit! Consider not carrying too much or bugging a maintainer to raise this limit!</span>")
-		return orient2hud_legacy(user, maxcolumns)
+		return FALSE // false triggers the old system
 	// after this point we are sure we can somehow fit all items into our max number of rows.
 
 	// determine rows
 	var/rows = clamp(CEILING(min_pixels / horizontal_pixels, 1), 1, screen_max_rows)
 
-	var/overrun = FALSE
-	if(used > our_volume)
-		// congratulations we are now in overrun mode. everything will be crammed to minimum storage pixels.
-		to_chat(user, "<span class='warning'>[parent] rendered in overrun mode due to more items inside than the maximum volume supports.</span>")
-		overrun = TRUE
-
-	// how much we are using
+	// how much we are using, the actual horizontal px being used per object
 	var/using_horizontal_pixels = horizontal_pixels * rows
 
 	// item padding
@@ -160,8 +94,8 @@
 		I.plane = VOLUMETRIC_STORAGE_ITEM_PLANE
 
 		// finally add our things.
-		. += B.on_screen_objects()
-		. += I
+		// . += B.on_screen_objects()
+		// . += I
 
 		// go up a row if needed
 		if(addrow)
@@ -170,17 +104,17 @@
 			current_pixel = VOLUMETRIC_STORAGE_EDGE_PADDING
 
 	// Then, continuous section.
-	ui_continuous = get_ui_continuous()
-	ui_continuous.screen_loc = "[screen_start_x]:[screen_pixel_x],[screen_start_y]:[screen_pixel_y] to [screen_start_x+maxcolumns-1]:[screen_pixel_x],[screen_start_y+rows-1]:[screen_pixel_y]"
-	. += ui_continuous
+
+	boxes.screen_loc = "[screen_start_x]:[screen_pixel_x],[screen_start_y]:[screen_pixel_y] to [screen_start_x+cols-1]:[screen_pixel_x],[screen_start_y+rows-1]:[screen_pixel_y]"
+	// . += ui_continuous
 	// Then, left.
-	ui_left = get_ui_left()
-	ui_left.screen_loc = "[screen_start_x]:[screen_pixel_x - 2],[screen_start_y]:[screen_pixel_y] to [screen_start_x]:[screen_pixel_x - 2],[screen_start_y+rows-1]:[screen_pixel_y]"
-	. += ui_left
+	// ui_left = get_ui_left()
+	left.screen_loc = "[screen_start_x]:[screen_pixel_x - 2],[screen_start_y]:[screen_pixel_y] to [screen_start_x]:[screen_pixel_x - 2],[screen_start_y+rows-1]:[screen_pixel_y]"
+	// . += ui_left
 	// Then, closer, which is also our right element.
-	ui_close = get_ui_close()
-	ui_close.screen_loc = "[screen_start_x + maxcolumns]:[screen_pixel_x],[screen_start_y]:[screen_pixel_y] to [screen_start_x + maxcolumns]:[screen_pixel_x],[screen_start_y+rows-1]:[screen_pixel_y]"
-	. += ui_close
+	// ui_close = get_ui_close()
+	closer.screen_loc = "[screen_start_x + cols]:[screen_pixel_x],[screen_start_y]:[screen_pixel_y] to [screen_start_x + cols]:[screen_pixel_x],[screen_start_y+rows-1]:[screen_pixel_y]"
+	// . += ui_close
 
 /**
   * Shows our UI to a mob.
