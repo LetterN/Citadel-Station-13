@@ -9,7 +9,6 @@
 import { useBackend, useSharedState } from '../backend';
 import { map } from 'common/collections';
 import { Section, Tabs, Table, Button, Box, NoticeBox, Divider } from '../components';
-import { Fragment } from 'inferno';
 import { Window } from '../layouts';
 
 let REC_RATVAR = "";
@@ -23,20 +22,8 @@ export const ClockworkSlab = (props, context) => {
   const { act, data } = useBackend(context);
   const {
     recollection = true,
-    scripture = {},
-    tier_infos = {},
-    power = "0 W",
   } = data;
-  const [
-    tab,
-    setTab,
-  ] = useSharedState(context, 'tab', 'Application');
-  const scriptInTab = scripture
-  && scripture[tab]
-  || [];
-  const tierInfo = tier_infos
-  && tier_infos[tab]
-  || {};
+
 
   return (
     <Window
@@ -44,75 +31,10 @@ export const ClockworkSlab = (props, context) => {
       width={800}
       height={420}>
       <Window.Content scrollable>
-        {recollection ? ( // tutorial
-          <CSTutorial />
+        {recollection ? (
+          <Recollection />
         ) : (
-          <Section
-            title="Power"
-            buttons={(
-              <Button
-                icon="book"
-                tooltip={"Tutorial"}
-                tooltipPosition={"left"}
-                onClick={() => act('toggle')}>
-                Recollection
-              </Button>
-            )}>
-            <b>{power}</b> power is available for scripture
-            and other consumers.
-            <Section level={2}>
-              <Tabs>
-                {map((scriptures, name) => (
-                  <Tabs.Tab
-                    key={name}
-                    selected={tab === name}
-                    onClick={() => setTab(name)}>
-                    {name}
-                  </Tabs.Tab>
-                ))(scripture)}
-              </Tabs>
-              <Box
-                as={'span'}
-                textColor={'#B18B25'}
-                bold={!!tierInfo.ready} // muh booleans
-                italic={!tierInfo.ready}>
-                {tierInfo.ready ? (
-                  "These scriptures are permanently unlocked."
-                ) : (
-                  tierInfo.requirement
-                )}
-              </Box>
-              <br />
-              <Box as={'span'} textColor={'#DAAA18'}>
-                Scriptures in <b>yellow</b> are related to
-                construction and building.
-              </Box>
-              <br />
-              <Box as={'span'} textColor={'#6E001A'}>
-                Scriptures in <b>red</b> are related to
-                attacking and offense.
-              </Box>
-              <br />
-              <Box as={'span'} textColor={'#1E8CE1'}>
-                Scriptures in <b>blue</b> are related to
-                healing and defense.
-              </Box>
-              <br />
-              <Box as={'span'} textColor={'#AF0AAF'}>
-                Scriptures in <b>purple</b> are niche but
-                still important!
-              </Box>
-              <br />
-              <Box as={'span'} textColor={'#DAAA18'} italic>
-                Scriptures with italicized names are
-                important to success.
-              </Box>
-              <Divider />
-              <Table>
-                <CSScripture scriptInTab={scriptInTab} />
-              </Table>
-            </Section>
-          </Section>
+          <Recital />
         )}
       </Window.Content>
     </Window>
@@ -180,7 +102,7 @@ export const CSScripture = (props, context) => {
   );
 };
 
-export const CSTutorial = (props, context) => {
+export const Recollection = (props, context) => {
   const { act, data } = useBackend(context);
   const {
     recollection_categories = [],
@@ -209,7 +131,7 @@ export const CSTutorial = (props, context) => {
             {REC_RATVAR}
           </Box>
         ) : (
-          <Fragment>
+          <>
             <Box
               as="span"
               textColor="#BE8700"
@@ -237,11 +159,11 @@ export const CSTutorial = (props, context) => {
               not let it confuse you! You are free to use the names
               in pronoun form when speaking in normal languages.
             </NoticeBox>
-          </Fragment>
+          </>
         )}
       </Box>
       {recollection_categories?.map(cat => (
-        <Fragment key={cat.name}>
+        <>
           <br />
           <Button
             tooltip={cat.desc}
@@ -251,7 +173,7 @@ export const CSTutorial = (props, context) => {
             })} >
             {cat.name}
           </Button>
-        </Fragment>
+        </>
       ))}
       <Divider />
       <Box>
@@ -288,7 +210,7 @@ export const CSTutorial = (props, context) => {
         </Box>
         <br /><br />
         {rec_binds?.map(bind => (
-          <Fragment key={bind.name ? bind.name : "none"}>
+          <>
             A <b>Quickbind</b> slot ({rec_binds.indexOf(bind)+1}),
             currently set to&nbsp;
             <span style={`color:${bind ? bind.color : "#BE8700"}`}>
@@ -296,9 +218,97 @@ export const CSTutorial = (props, context) => {
             </span>
             .
             <br />
-          </Fragment>
+          </>
         ))}
       </Box>
     </Section>
   );
+};
+
+export const Recital = (props, context) => {
+  const { act, data } = useBackend(context);
+  const {
+    scripture = {},
+    tier_infos = {},
+    power = "0 W",
+  } = data;
+  const [
+    tab,
+    setTab,
+  ] = useSharedState(context, 'tab', 'Application');
+  const scriptInTab = scripture
+  && scripture[tab]
+  || [];
+  const tierInfo = tier_infos
+  && tier_infos[tab]
+  || {};
+
+  return (
+    <Section
+    title="Power"
+    buttons={(
+      <Button
+        icon="book"
+        tooltip={"Tutorial"}
+        tooltipPosition={"left"}
+        onClick={() => act('toggle')}>
+        Recollection
+      </Button>
+    )}>
+    <b>{power}</b> power is available for scripture
+    and other consumers.
+    <Section level={2}>
+      <Tabs>
+        {map((scriptures, name) => (
+          <Tabs.Tab
+            key={name}
+            selected={tab === name}
+            onClick={() => setTab(name)}>
+            {name}
+          </Tabs.Tab>
+        ))(scripture)}
+      </Tabs>
+      <Box
+        as={'span'}
+        textColor={'#B18B25'}
+        bold={!!tierInfo.ready} // muh booleans
+        italic={!tierInfo.ready}>
+        {tierInfo.ready ? (
+          "These scriptures are permanently unlocked."
+        ) : (
+          tierInfo.requirement
+        )}
+      </Box>
+      <br />
+      <Box as={'span'} textColor={'#DAAA18'}>
+        Scriptures in <b>yellow</b> are related to
+        construction and building.
+      </Box>
+      <br />
+      <Box as={'span'} textColor={'#6E001A'}>
+        Scriptures in <b>red</b> are related to
+        attacking and offense.
+      </Box>
+      <br />
+      <Box as={'span'} textColor={'#1E8CE1'}>
+        Scriptures in <b>blue</b> are related to
+        healing and defense.
+      </Box>
+      <br />
+      <Box as={'span'} textColor={'#AF0AAF'}>
+        Scriptures in <b>purple</b> are niche but
+        still important!
+      </Box>
+      <br />
+      <Box as={'span'} textColor={'#DAAA18'} italic>
+        Scriptures with italicized names are
+        important to success.
+      </Box>
+      <Divider />
+      <Table>
+        <CSScripture scriptInTab={scriptInTab} />
+      </Table>
+    </Section>
+  </Section>
+  )
 };

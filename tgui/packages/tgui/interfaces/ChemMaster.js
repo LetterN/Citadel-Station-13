@@ -1,4 +1,3 @@
-import { Fragment } from 'inferno';
 import { useBackend, useSharedState } from '../backend';
 import { AnimatedNumber, Box, Button, ColorBox, LabeledList, NumberInput, Section, Table } from '../components';
 import { Window } from '../layouts';
@@ -9,8 +8,7 @@ export const ChemMaster = (props, context) => {
   return (
     <Window
       width={465}
-      height={550}
-      resizable>
+      height={550}>
       <Window.Content scrollable>
         {screen === 'analyze' && (
           <AnalysisResults />
@@ -39,11 +37,11 @@ const ChemMasterContent = (props, context) => {
     return <AnalysisResults />;
   }
   return (
-    <Fragment>
+    <>
       <Section
         title="Beaker"
         buttons={!!data.isBeakerLoaded && (
-          <Fragment>
+          <>
             <Box inline color="label" mr={2}>
               <AnimatedNumber
                 value={beakerCurrentVolume}
@@ -54,7 +52,7 @@ const ChemMasterContent = (props, context) => {
               icon="eject"
               content="Eject"
               onClick={() => act('eject')} />
-          </Fragment>
+          </>
         )}>
         {!isBeakerLoaded && (
           <Box color="label" mt="3px" mb="5px">
@@ -78,7 +76,7 @@ const ChemMasterContent = (props, context) => {
       <Section
         title="Buffer"
         buttons={(
-          <Fragment>
+          <>
             <Box inline color="label" mr={1}>
               Mode:
             </Box>
@@ -87,7 +85,7 @@ const ChemMasterContent = (props, context) => {
               icon={data.mode ? 'exchange-alt' : 'times'}
               content={data.mode ? 'Transfer' : 'Destroy'}
               onClick={() => act('toggleMode')} />
-          </Fragment>
+          </>
         )}>
         {bufferContents.length === 0 && (
           <Box color="label" mt="3px" mb="5px">
@@ -111,7 +109,7 @@ const ChemMasterContent = (props, context) => {
         <Section
           title="Pill Bottle"
           buttons={(
-            <Fragment>
+            <>
               <Box inline color="label" mr={2}>
                 {pillBottleCurrentAmount} / {pillBottleMaxAmount} pills
               </Box>
@@ -119,10 +117,10 @@ const ChemMasterContent = (props, context) => {
                 icon="eject"
                 content="Eject"
                 onClick={() => act('ejectPillBottle')} />
-            </Fragment>
+            </>
           )} />
       )}
-    </Fragment>
+    </>
   );
 };
 
@@ -205,7 +203,7 @@ const PackagingControlsItem = props => {
         stepPixelSize={15}
         value={amount}
         minValue={1}
-        maxValue={20}
+        maxValue={10}
         onChange={onChangeAmount} />
       <Button
         ml={1}
@@ -247,8 +245,12 @@ const PackagingControls = (props, context) => {
   const {
     condi,
     chosenPillStyle,
+    // chosenCondiStyle,
+    // autoCondiStyle,
     pillStyles = [],
+    // condiStyles = [],
   } = data;
+  // const autoCondiStyleChosen = autoCondiStyle === chosenCondiStyle;
   return (
     <LabeledList>
       {!condi && (
@@ -376,13 +378,15 @@ const AnalysisResults = (props, context) => {
             screen: 'home',
           })} />
       )}>
-
       <LabeledList>
         <LabeledList.Item label="Name">
           {analyzeVars.name}
         </LabeledList.Item>
         <LabeledList.Item label="State">
           {analyzeVars.state}
+        </LabeledList.Item>
+        <LabeledList.Item label="pH">
+          {props.fermianalyze.ph}
         </LabeledList.Item>
         <LabeledList.Item label="Color">
           <ColorBox color={analyzeVars.color} mr={1} />

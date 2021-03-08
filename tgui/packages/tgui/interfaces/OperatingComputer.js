@@ -1,4 +1,3 @@
-import { Fragment } from 'inferno';
 import { useBackend, useSharedState } from '../backend';
 import { AnimatedNumber, Button, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
 import { Window } from '../layouts';
@@ -27,8 +26,7 @@ export const OperatingComputer = (props, context) => {
   return (
     <Window
       width={350}
-      height={470}
-      resizable>
+      height={470}>
       <Window.Content scrollable>
         <Tabs>
           <Tabs.Tab
@@ -68,7 +66,7 @@ const PatientStateView = (props, context) => {
     );
   }
   return (
-    <Fragment>
+    <>
       <Section title="Patient State">
         {patient && (
           <LabeledList>
@@ -90,7 +88,7 @@ const PatientStateView = (props, context) => {
               </ProgressBar>
             </LabeledList.Item>
             {damageTypes.map(type => (
-              <LabeledList.Item key={type.type} label={(patient.is_robotic_organism && type.label === 'Toxin') ? 'Corruption' : type.label}>
+              <LabeledList.Item key={type.type} label={type.label}>
                 <ProgressBar
                   value={patient[type.type] / patient.maxHealth}
                   color="bad">
@@ -116,29 +114,29 @@ const PatientStateView = (props, context) => {
             <LabeledList.Item label="Next Step">
               {procedure.next_step}
               {procedure.chems_needed && (
-                <Fragment>
+                <>
                   <b>Required Chemicals:</b>
                   <br />
                   {procedure.chems_needed}
-                </Fragment>
+                </>
               )}
             </LabeledList.Item>
             {!!data.alternative_step && (
               <LabeledList.Item label="Alternative Step">
                 {procedure.alternative_step}
                 {procedure.alt_chems_needed && (
-                  <Fragment>
+                  <>
                     <b>Required Chemicals:</b>
                     <br />
                     {procedure.alt_chems_needed}
-                  </Fragment>
+                  </>
                 )}
               </LabeledList.Item>
             )}
           </LabeledList>
         </Section>
       ))}
-    </Fragment>
+    </>
   );
 };
 
