@@ -4,8 +4,16 @@
 	///List of all knowledge excluding the unreachable base types.
 	var/list/blacklist = list(/datum/eldritch_knowledge/spell,/datum/eldritch_knowledge/curse,/datum/eldritch_knowledge/final,/datum/eldritch_knowledge/summon)
 	var/list/all_possible_knowledge = subtypesof(/datum/eldritch_knowledge) - blacklist
-
-	var/list/list_to_check = GLOB.heretic_start_knowledge.Copy()
+	//gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+	// gain_knowledge(/datum/eldritch_knowledge/living_heart)
+	// gain_knowledge(/datum/eldritch_knowledge/codex_cicatrix)
+	// gain_knowledge(/datum/eldritch_knowledge/eldritch_blade)
+	var/list/list_to_check = list(
+		/datum/eldritch_knowledge/spell/basic,
+		/datum/eldritch_knowledge/living_heart,
+		/datum/eldritch_knowledge/codex_cicatrix,
+		/datum/eldritch_knowledge/eldritch_blade
+		)
 	var/i = 0
 	while(i < length(list_to_check))
 		var/datum/eldritch_knowledge/eldritch_knowledge = allocate(list_to_check[++i])
