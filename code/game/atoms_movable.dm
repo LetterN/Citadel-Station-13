@@ -55,9 +55,6 @@
 	///Internal holder for emissive blocker object, do not use directly use blocks_emissive
 	var/atom/movable/emissive_blocker/em_block
 
-	/// Should we use tooltips, if the thing does not have the code implemented `get_tooltip_data()`, it will default to examine(src)
-	var/tooltips = FALSE
-
 
 /atom/movable/Initialize(mapload)
 	. = ..()

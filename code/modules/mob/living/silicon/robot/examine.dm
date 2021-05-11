@@ -48,9 +48,6 @@
 			. += "<span class='warning'>It doesn't seem to be responding.</span>"
 		if(DEAD)
 			. += "<span class='deadsay'>It looks like its system is corrupted and requires a reset.</span>"
-
-	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, usr, .)
-
 	. += "*---------*</span>"
 
 	. += ..()

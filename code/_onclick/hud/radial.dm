@@ -13,6 +13,7 @@ GLOBAL_LIST_EMPTY(radial_menus)
 	icon_state = "radial_slice"
 	var/choice
 	var/next_page = FALSE
+	var/tooltips = FALSE
 
 /obj/screen/radial/slice/MouseEntered(location, control, params)
 	. = ..()
