@@ -49,7 +49,8 @@
   );
   @include meta.load-css(
     '../components/ProgressBar.scss',
-    $with: ('background-color': #2d1400, // 'border-color': #170800)
+    // 'border-color': #170800
+    $with: ('background-color': #2d1400)
   );
   @include meta.load-css('../components/Section.scss');
   @include meta.load-css(

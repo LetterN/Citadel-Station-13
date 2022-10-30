@@ -28,6 +28,11 @@ const AdventureEntry = (props, context) => {
   const { data, act } = useBackend<AdventureBrowserData>(context);
   const { entry_ref, close }: { entry_ref: string; close: () => void } = props;
   const entry = data.adventures.find((x) => x.ref === entry_ref);
+
+  if (!entry) {
+    return null;
+  }
+
   return (
     <Section>
       <LabeledList>
@@ -81,7 +86,7 @@ const AdventureEntry = (props, context) => {
 
 const AdventureList = (props, context) => {
   const { data, act } = useBackend<AdventureBrowserData>(context);
-  const [openAdventure, setOpenAdventure] = useLocalState(
+  const [openAdventure, setOpenAdventure] = useLocalState<string | null>(
     context,
     'openAdventure',
     null
@@ -102,12 +107,15 @@ const AdventureList = (props, context) => {
             <Table.Cell color="label">Title</Table.Cell>
             <Table.Cell color="label">Edit</Table.Cell>
           </Table.Row>
-          {data.adventures.map((p) => (
-            <Table.Row key={p.ref} className="candystripe">
-              <Table.Cell>{p.id}</Table.Cell>
-              <Table.Cell>{p.name}</Table.Cell>
+          {data.adventures.map((adventure) => (
+            <Table.Row key={adventure.ref} className="candystripe">
+              <Table.Cell>{adventure.id}</Table.Cell>
+              <Table.Cell>{adventure.name}</Table.Cell>
               <Table.Cell>
-                <Button icon="edit" onClick={() => setOpenAdventure(p.ref)} />
+                <Button
+                  icon="edit"
+                  onClick={() => setOpenAdventure(adventure.ref)}
+                />
               </Table.Cell>
             </Table.Row>
           ))}
@@ -131,7 +139,12 @@ const DebugPlayer = (props, context) => {
           DELAY {formatTime(data.delay_time)} / {data.delay_message}
         </Box>
       ) : (
-        <AdventureScreen hide_status />
+        <AdventureScreen
+          adventure_data={data.adventure_data}
+          drone_integrity={100}
+          drone_max_integrity={100}
+          hide_status
+        />
       )}
     </Section>
   );
