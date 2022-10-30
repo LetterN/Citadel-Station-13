@@ -789,6 +789,10 @@
 	set name = "Resist"
 	set category = "IC"
 
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, .proc/execute_resist))
+
+///proc extender of [/mob/living/verb/resist] meant to make the process queable if the server is overloaded when the verb is called
+/mob/living/proc/execute_resist()
 	if(!can_resist())
 		return
 

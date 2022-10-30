@@ -379,26 +379,58 @@
 			var/msg = "<span class='smallnotice'>[src] makes eye contact with you.</span>"
 			addtimer(CALLBACK(GLOBAL_PROC, .proc/to_chat, examined_mob, msg), 3)
 
-//same as above
-//note: ghosts can point, this is intended
-//visible_message will handle invisibility properly
-//overridden here and in /mob/dead/observer for different point span classes and sanity checks
-/mob/verb/pointed(atom/A as mob|obj|turf in fov_view())
+/**
+ * Point at an atom
+ *
+ * mob verbs are faster than object verbs. See
+ * [this byond forum post](https://secure.byond.com/forum/?post=1326139&page=2#comment8198716)
+ * for why this isn't atom/verb/pointed()
+ *
+ * note: ghosts can point, this is intended
+ *
+ * visible_message will handle invisibility properly
+ *
+ * overridden here and in /mob/dead/observer for different point span classes and sanity checks
+ */
+/mob/verb/pointed(atom/A as mob|obj|turf in view())
 	set name = "Point To"
 	set category = "Object"
 
-	if(!src || !isturf(src.loc) || !(A in view(src.loc)))
-		return FALSE
 	if(istype(A, /obj/effect/temp_visual/point))
 		return FALSE
 
-	var/tile = get_turf(A)
-	if (!tile)
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, .proc/_pointed, A))
+
+/// possibly delayed verb that finishes the pointing process starting in [/mob/verb/pointed()].
+/// either called immediately or in the tick after pointed() was called, as per the [DEFAULT_QUEUE_OR_CALL_VERB()] macro
+/mob/proc/_pointed(atom/pointing_at)
+	if(client && !(pointing_at in view(client.view, src)))
 		return FALSE
 
-	new /obj/effect/temp_visual/point(A,invisibility)
-	SEND_SIGNAL(src, COMSIG_MOB_POINTED, A)
+	point_at(pointing_at)
+
+	SEND_SIGNAL(src, COMSIG_MOB_POINTED, pointing_at)
 	return TRUE
+
+/**
+ * Point at an atom
+ *
+ * Intended to enable and standardise the pointing animation for all atoms
+ *
+ * Not intended as a replacement for the mob verb
+ */
+/atom/movable/proc/point_at(atom/pointed_atom)
+	if(!isturf(loc))
+		return
+
+	var/turf/tile = get_turf(pointed_atom)
+	if (!tile)
+		return
+
+	var/turf/our_tile = get_turf(src)
+	var/obj/visual = new /obj/effect/temp_visual/point(our_tile, invisibility)
+
+	animate(visual, pixel_x = (tile.x - our_tile.x) * world.icon_size + pointed_atom.pixel_x, pixel_y = (tile.y - our_tile.y) * world.icon_size + pointed_atom.pixel_y, time = 1.7, easing = EASE_OUT)
 
 /mob/proc/can_resist()
 	return FALSE		//overridden in living.dm
@@ -428,11 +460,20 @@
 /mob/proc/update_rest_hud_icon()
 	hud_used?.rest_icon?.update_icon()
 
+/**
+ * Verb to activate the object in your held hand
+ *
+ * Calls attack self on the item and updates the inventory hud for hands
+ */
 /mob/verb/mode()
 	set name = "Activate Held Object"
 	set category = "Object"
 	set src = usr
 
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, .proc/execute_mode))
+
+///proc version to finish /mob/verb/mode() execution. used in case the proc needs to be queued for the tick after its first called
+/mob/proc/execute_mode()
 	if(ismecha(loc))
 		return
 
