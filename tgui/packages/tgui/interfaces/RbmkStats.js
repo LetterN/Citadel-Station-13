@@ -1,11 +1,6 @@
-import { map, sortBy } from 'common/collections';
-import { flow } from 'common/fp';
-import { toFixed } from 'common/math';
-import { pureComponentHooks } from 'common/react';
-import { Component, Fragment } from 'inferno';
-import { Box, Button, Chart, ColorBox, Flex, Icon, LabeledList, ProgressBar, Section, Table } from '../components';
+import { Chart, ProgressBar, Section } from '../components';
 import { Window } from '../layouts';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 
 export const RbmkStats = (props, context) => {
   const { act, data } = useBackend(context);
@@ -14,11 +9,7 @@ export const RbmkStats = (props, context) => {
   const tempInputData = data.tempInputData.map((value, i) => [i, value]);
   const tempOutputdata = data.tempOutputdata.map((value, i) => [i, value]);
   return (
-    <Window
-      resizable
-      theme="ntos"
-      width={350}
-      height={500}>
+    <Window resizable theme="ntos" width={350} height={500}>
       <Window.Content>
         <Section title="Legend:">
           Reactor Power (%):
@@ -26,14 +17,15 @@ export const RbmkStats = (props, context) => {
             value={data.power}
             minValue={0}
             maxValue={100}
-            color="yellow" />
+            color="yellow"
+          />
           <br />
           Reactor Pressure (PSI):
           <ProgressBar
             value={data.psi}
             minValue={0}
             maxValue={2000}
-            color="white" >
+            color="white">
             {data.psi} PSI
           </ProgressBar>
           Coolant temperature (°C):
@@ -60,28 +52,32 @@ export const RbmkStats = (props, context) => {
             rangeX={[0, powerData.length - 1]}
             rangeY={[0, 1500]}
             strokeColor="rgba(255, 215,0, 1)"
-            fillColor="rgba(255, 215, 0, 0.1)" />
+            fillColor="rgba(255, 215, 0, 0.1)"
+          />
           <Chart.Line
             fillPositionedParent
             data={psiData}
             rangeX={[0, psiData.length - 1]}
             rangeY={[0, 1500]}
             strokeColor="rgba(255,250,250, 1)"
-            fillColor="rgba(255,250,250, 0.1)" />
+            fillColor="rgba(255,250,250, 0.1)"
+          />
           <Chart.Line
             fillPositionedParent
             data={tempInputData}
             rangeX={[0, tempInputData.length - 1]}
             rangeY={[-273.15, 1227]}
             strokeColor="rgba(127, 179, 255 , 1)"
-            fillColor="rgba(127, 179, 255 , 0.1)" />
+            fillColor="rgba(127, 179, 255 , 0.1)"
+          />
           <Chart.Line
             fillPositionedParent
             data={tempOutputdata}
             rangeX={[0, tempOutputdata.length - 1]}
             rangeY={[-273.15, 1227]}
             strokeColor="rgba(255, 0, 0 , 1)"
-            fillColor="rgba(255, 0, 0 , 0.1)" />
+            fillColor="rgba(255, 0, 0 , 0.1)"
+          />
         </Section>
       </Window.Content>
     </Window>

@@ -9,12 +9,10 @@ export const DecalPainter = (props, context) => {
   const color_list = data.color_list || [];
   const dir_list = data.dir_list || [];
   return (
-    <Window
-      width={500}
-      height={400}>
+    <Window width={500} height={400}>
       <Window.Content>
         <Section title="Decal Type">
-          {decal_list.map(decal => (
+          {decal_list.map((decal) => (
             <Button
               key={decal.decal}
               style={{
@@ -23,22 +21,28 @@ export const DecalPainter = (props, context) => {
                 padding: 0,
               }}
               selected={decal.decal === data.decal_style}
-              onClick={() => act('select decal', {
-                decals: decal.decal,
-              })}>
+              onClick={() =>
+                act('select decal', {
+                  decals: decal.decal,
+                })
+              }>
               <Box
                 className={classes([
                   'decals32x32',
-                  data.decal_dir_text + '-' + decal.decal + (data.decal_color ? '_' + data.decal_color : ''),
+                  data.decal_dir_text +
+                    '-' +
+                    decal.decal +
+                    (data.decal_color ? '_' + data.decal_color : ''),
                 ])}
                 style={{
                   transform: 'scale(1.5) translate(17%, 17%)',
-                }} />
+                }}
+              />
             </Button>
           ))}
         </Section>
         <Section title="Decal Color">
-          {color_list.map(color => {
+          {color_list.map((color) => {
             return (
               <Button
                 key={color.colors}
@@ -47,29 +51,37 @@ export const DecalPainter = (props, context) => {
                   height: '48px',
                   padding: 0,
                 }}
-                content={color.colors === "red"
-                  ? "Red"
-                  : color.colors === "white"
-                    ? "White"
-                    : "Yellow"}
+                content={
+                  color.colors === 'red'
+                    ? 'Red'
+                    : color.colors === 'white'
+                      ? 'White'
+                      : 'Yellow'
+                }
                 selected={color.colors === data.decal_color}
-                onClick={() => act('select color', {
-                  colors: color.colors,
-                })}>
+                onClick={() =>
+                  act('select color', {
+                    colors: color.colors,
+                  })
+                }>
                 <Box
                   className={classes([
                     'decals32x32',
-                    data.decal_dir_text + '-' + data.decal_style + (color.colors ? '_' + color.colors : ''),
+                    data.decal_dir_text +
+                      '-' +
+                      data.decal_style +
+                      (color.colors ? '_' + color.colors : ''),
                   ])}
                   style={{
                     transform: 'scale(1.5) translate(17%, 17%)',
-                  }} />
+                  }}
+                />
               </Button>
             );
           })}
         </Section>
         <Section title="Decal Direction">
-          {dir_list.map(dir => {
+          {dir_list.map((dir) => {
             return (
               <Button
                 key={dir.dirs}
@@ -78,32 +90,39 @@ export const DecalPainter = (props, context) => {
                   height: '48px',
                   padding: 0,
                 }}
-                tooltip={dir.dirs === 1
-                  ? "North"
-                  : dir.dirs === 2
-                    ? "South"
-                    : dir.dirs === 4
-                      ? "East"
-                      : "West"}
+                tooltip={
+                  dir.dirs === 1
+                    ? 'North'
+                    : dir.dirs === 2
+                      ? 'South'
+                      : dir.dirs === 4
+                        ? 'East'
+                        : 'West'
+                }
                 selected={dir.dirs === data.decal_direction}
-                onClick={() => act('selected direction', {
-                  dirs: dir.dirs,
-                })}>
+                onClick={() =>
+                  act('selected direction', {
+                    dirs: dir.dirs,
+                  })
+                }>
                 <Box
                   className={classes([
                     'decals32x32',
                     (dir.dirs === 1
-                      ? "north"
+                      ? 'north'
                       : dir.dirs === 2
-                        ? "south"
+                        ? 'south'
                         : dir.dirs === 4
-                          ? "east"
-                          : "west")
-                      + '-' + data.decal_style + (data.decal_color ? '_' + data.decal_color : ''),
+                          ? 'east'
+                          : 'west') +
+                      '-' +
+                      data.decal_style +
+                      (data.decal_color ? '_' + data.decal_color : ''),
                   ])}
                   style={{
                     transform: 'scale(1.5) translate(17%, 17%)',
-                  }} />
+                  }}
+                />
               </Button>
             );
           })}

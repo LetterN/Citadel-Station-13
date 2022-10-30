@@ -1,4 +1,3 @@
-import { map } from 'common/collections';
 import { useBackend } from '../backend';
 import { Box, Button, Collapsible, NoticeBox, ProgressBar, Section } from '../components';
 import { Window } from '../layouts';
@@ -26,15 +25,15 @@ export const CloningConsole = (props, context) => {
             title="Autoclone"
             buttons={
               <Button
-                content={autoprocess ? "Enabled" : "Disabled"}
-                color={autoprocess ? "green" : "default"}
-                icon={autoprocess ? "toggle-on" : "toggle-off"}
+                content={autoprocess ? 'Enabled' : 'Disabled'}
+                color={autoprocess ? 'green' : 'default'}
+                icon={autoprocess ? 'toggle-on' : 'toggle-off'}
                 disabled={!hasAutoprocess}
                 onClick={() => act('toggle_autoprocess')}
               />
             }
           />
-        ) : (null) }
+        ) : null}
         <Section>
           <Section title="Cloning Pod Status">
             <Box backgroundColor="#40638a" p="1px">
@@ -49,25 +48,27 @@ export const CloningConsole = (props, context) => {
                 <Box backgroundColor="black" color="white" p="5px">
                   {scanTemp}
                 </Box>
-              </Box><br />
+              </Box>
+              <br />
               <Button
-                content={useRecords ? "Start Scan" : "Clone"}
-                icon={useRecords ? "search" : "power-off"}
+                content={useRecords ? 'Start Scan' : 'Clone'}
+                icon={useRecords ? 'search' : 'power-off'}
                 disabled={!hasOccupant}
                 onClick={() => act('scan')}
               />
               <Button
-                content={scannerLocked ? "Unlock Scanner" : "Lock Scanner"}
-                icon={scannerLocked ? "lock" : "lock-open"}
+                content={scannerLocked ? 'Unlock Scanner' : 'Lock Scanner'}
+                icon={scannerLocked ? 'lock' : 'lock-open'}
                 disabled={!hasOccupant && !scannerLocked}
                 onClick={() => act('toggle_lock')}
               />
             </Section>
           ) : (
             <Section title="Modules">
-              {lacksMachine.map(machine => (
+              {lacksMachine.map((machine) => (
                 <Box key={machine} color="red">
-                  {machine}<br />
+                  {machine}
+                  <br />
                 </Box>
               ))}
             </Section>
@@ -78,54 +79,88 @@ export const CloningConsole = (props, context) => {
                 <NoticeBox>
                   <Collapsible title={recordsLength}>
                     <h2>Current Records: </h2>
-                    {records.map(record => (
-                      <Section backgroundColor="#191919" color="white" key={record}>
-                        <Collapsible title={record["name"]}>
-                          <div key={record["name"]} style={{
-                            'word-break': 'break-all',
-                          }}>
-                            Scan ID {record["id"]}<br />
+                    {records.map((record) => (
+                      <Section
+                        backgroundColor="#191919"
+                        color="white"
+                        key={record}>
+                        <Collapsible title={record['name']}>
+                          <div
+                            key={record['name']}
+                            style={{
+                              'word-break': 'break-all',
+                            }}>
+                            Scan ID {record['id']}
+                            <br />
                             <Button
                               content="Clone"
                               icon="power-off"
-                              onClick={() => act('clone', {
-                                target: record["id"],
-                              })}
+                              onClick={() =>
+                                act('clone', {
+                                  target: record['id'],
+                                })
+                              }
                             />
                             <Button
                               content="Delete Record"
                               icon="user-slash"
-                              onClick={() => act('delrecord', {
-                                target: record["id"],
-                              })}
+                              onClick={() =>
+                                act('delrecord', {
+                                  target: record['id'],
+                                })
+                              }
                             />
                             <Button
                               content="Save to Disk"
                               icon="upload"
                               disabled={diskData.length === 0}
-                              onClick={() => act('save', {
-                                target: record["id"],
-                              })}
+                              onClick={() =>
+                                act('save', {
+                                  target: record['id'],
+                                })
+                              }
                             />
                             <br />
-                            Health Implant Data<br />
-
+                            Health Implant Data
+                            <br />
                             <small>
-                              Oxygen Deprivation Damage:<br />
-                              <ProgressBar color="blue" value={record["damages"]["oxy"] / 100} />
-                              Fire Damage:<br />
-                              <ProgressBar color="orange" value={record["damages"]["burn"] / 100} />
-                              Toxin Damage:<br />
-                              <ProgressBar color="green" value={record["damages"]["tox"] / 100} />
-                              Brute Damage:<br />
-                              <ProgressBar color="red" value={record["damages"]["brute"] / 100} />
-                            </small><br />
-                            Unique Identifier:<br />
-                            {record["UI"]}<br />
-                            Unique Enzymes:<br />
-                            {record["UE"]}<br />
-                            Blood Type:<br />
-                            {record["blood_type"]}
+                              Oxygen Deprivation Damage:
+                              <br />
+                              <ProgressBar
+                                color="blue"
+                                value={record['damages']['oxy'] / 100}
+                              />
+                              Fire Damage:
+                              <br />
+                              <ProgressBar
+                                color="orange"
+                                value={record['damages']['burn'] / 100}
+                              />
+                              Toxin Damage:
+                              <br />
+                              <ProgressBar
+                                color="green"
+                                value={record['damages']['tox'] / 100}
+                              />
+                              Brute Damage:
+                              <br />
+                              <ProgressBar
+                                color="red"
+                                value={record['damages']['brute'] / 100}
+                              />
+                            </small>
+                            <br />
+                            Unique Identifier:
+                            <br />
+                            {record['UI']}
+                            <br />
+                            Unique Enzymes:
+                            <br />
+                            {record['UE']}
+                            <br />
+                            Blood Type:
+                            <br />
+                            {record['blood_type']}
                           </div>
                         </Collapsible>
                       </Section>
@@ -140,7 +175,7 @@ export const CloningConsole = (props, context) => {
                     <Button
                       content="Load"
                       icon="download"
-                      disabled={!diskData["name"]}
+                      disabled={!diskData['name']}
                       onClick={() => act('load')}
                     />
                     <Button
@@ -150,25 +185,34 @@ export const CloningConsole = (props, context) => {
                       onClick={() => act('eject')}
                     />
                   </Box>
-                }
-              >
+                }>
                 {diskData.length !== 0 ? (
-                  <Collapsible title={diskData["name"] ? diskData["name"] : "Empty Disk"}>
-                    {diskData["id"] ? (
-                      <Box style={{
-                        'word-break': 'break-all',
-                      }}>
-                        ID: {diskData["id"]}<br />
-                        UI: {diskData["UI"]}<br />
-                        UE: {diskData["UE"]}<br />
-                        Blood Type: {diskData["blood_type"]}<br />
+                  <Collapsible
+                    title={diskData['name'] ? diskData['name'] : 'Empty Disk'}>
+                    {diskData['id'] ? (
+                      <Box
+                        style={{
+                          'word-break': 'break-all',
+                        }}>
+                        ID: {diskData['id']}
+                        <br />
+                        UI: {diskData['UI']}
+                        <br />
+                        UE: {diskData['UE']}
+                        <br />
+                        Blood Type: {diskData['blood_type']}
+                        <br />
                       </Box>
-                    ) : ("No Data")}
+                    ) : (
+                      'No Data'
+                    )}
                   </Collapsible>
-                ) : ("No Disk")}
+                ) : (
+                  'No Disk'
+                )}
               </Section>
             </Section>
-          ) : (null)}
+          ) : null}
         </Section>
       </Window.Content>
     </Window>

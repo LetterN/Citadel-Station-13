@@ -1,9 +1,9 @@
-import { range } from "common/collections";
-import { BooleanLike } from "common/react";
-import { resolveAsset } from "../assets";
-import { useBackend } from "../backend";
-import { Box, Button, Icon, Stack } from "../components";
-import { Window } from "../layouts";
+import { range } from 'common/collections';
+import { BooleanLike } from 'common/react';
+import { resolveAsset } from '../assets';
+import { useBackend } from '../backend';
+import { Box, Button, Icon, Stack } from '../components';
+import { Window } from '../layouts';
 
 const ROWS = 5;
 const COLUMNS = 6;
@@ -11,7 +11,7 @@ const COLUMNS = 6;
 const ROWS_LONG = 4;
 const COLUMNS_LONG = 11;
 
-const BUTTON_DIMENSIONS = "50px";
+const BUTTON_DIMENSIONS = '50px';
 
 type GridSpotKey = string;
 
@@ -20,7 +20,7 @@ const getGridSpotKey = (spot: [number, number]): GridSpotKey => {
 };
 
 const CornerText = (props: {
-  align: "left" | "right";
+  align: 'left' | 'right';
   children: string;
 }): JSX.Element => {
   const { align, children } = props;
@@ -28,12 +28,11 @@ const CornerText = (props: {
   return (
     <Box
       style={{
-        position: "relative",
-        left: align === "left" ? "2px" : "-2px",
-        "text-align": align,
-        "text-shadow": "1px 1px 1px #555",
-      }}
-    >
+        position: 'relative',
+        left: align === 'left' ? '2px' : '-2px',
+        'text-align': align,
+        'text-shadow': '1px 1px 1px #555',
+      }}>
       {children}
     </Box>
   );
@@ -46,41 +45,41 @@ type AlternateAction = {
 
 const ALTERNATE_ACTIONS: Record<string, AlternateAction> = {
   knot: {
-    icon: "shoe-prints",
-    text: "Knot",
+    icon: 'shoe-prints',
+    text: 'Knot',
   },
 
   untie: {
-    icon: "shoe-prints",
-    text: "Untie",
+    icon: 'shoe-prints',
+    text: 'Untie',
   },
 
   unknot: {
-    icon: "shoe-prints",
-    text: "Unknot",
+    icon: 'shoe-prints',
+    text: 'Unknot',
   },
 
   enable_internals: {
-    icon: "tg-air-tank",
-    text: "Enable internals",
+    icon: 'tg-air-tank',
+    text: 'Enable internals',
   },
 
   disable_internals: {
-    icon: "tg-air-tank-slash",
-    text: "Disable internals",
+    icon: 'tg-air-tank-slash',
+    text: 'Disable internals',
   },
 
   adjust_jumpsuit: {
-    icon: "tshirt",
-    text: "Adjust jumpsuit",
+    icon: 'tshirt',
+    text: 'Adjust jumpsuit',
   },
   enable_helmet: {
-    icon: "toggle-off",
-    text: "Extend helmet",
+    icon: 'toggle-off',
+    text: 'Extend helmet',
   },
   disable_helmet: {
-    icon: "toggle-on",
-    text: "Retract helmet",
+    icon: 'toggle-on',
+    text: 'Retract helmet',
   },
 };
 
@@ -94,129 +93,129 @@ const SLOTS: Record<
   }
 > = {
   eyes: {
-    displayName: "eyewear",
+    displayName: 'eyewear',
     gridSpot: getGridSpotKey([0, 1]),
-    image: "inventory-glasses.png",
+    image: 'inventory-glasses.png',
   },
 
   head: {
-    displayName: "headwear",
+    displayName: 'headwear',
     gridSpot: getGridSpotKey([0, 2]),
-    image: "inventory-head.png",
+    image: 'inventory-head.png',
   },
 
   neck: {
-    displayName: "neckwear",
+    displayName: 'neckwear',
     gridSpot: getGridSpotKey([1, 1]),
-    image: "inventory-neck.png",
+    image: 'inventory-neck.png',
   },
 
   mask: {
-    displayName: "mask",
+    displayName: 'mask',
     gridSpot: getGridSpotKey([1, 2]),
-    image: "inventory-mask.png",
+    image: 'inventory-mask.png',
   },
 
   corgi_collar: {
-    displayName: "collar",
+    displayName: 'collar',
     gridSpot: getGridSpotKey([1, 2]),
-    image: "inventory-collar.png",
+    image: 'inventory-collar.png',
   },
 
   ears: {
-    displayName: "earwear",
+    displayName: 'earwear',
     gridSpot: getGridSpotKey([1, 3]),
-    image: "inventory-ears.png",
+    image: 'inventory-ears.png',
   },
 
   parrot_headset: {
-    displayName: "headset",
+    displayName: 'headset',
     gridSpot: getGridSpotKey([1, 3]),
-    image: "inventory-ears.png",
+    image: 'inventory-ears.png',
   },
 
   handcuffs: {
-    displayName: "handcuffs",
+    displayName: 'handcuffs',
     gridSpot: getGridSpotKey([1, 4]),
   },
 
   legcuffs: {
-    displayName: "legcuffs",
+    displayName: 'legcuffs',
     gridSpot: getGridSpotKey([1, 5]),
   },
 
   jumpsuit: {
-    displayName: "uniform",
+    displayName: 'uniform',
     gridSpot: getGridSpotKey([2, 1]),
-    image: "inventory-uniform.png",
+    image: 'inventory-uniform.png',
   },
 
   suit: {
-    displayName: "suit",
+    displayName: 'suit',
     gridSpot: getGridSpotKey([2, 2]),
-    image: "inventory-suit.png",
+    image: 'inventory-suit.png',
   },
 
   gloves: {
-    displayName: "gloves",
+    displayName: 'gloves',
     gridSpot: getGridSpotKey([2, 3]),
-    image: "inventory-gloves.png",
+    image: 'inventory-gloves.png',
   },
 
   right_hand: {
-    displayName: "right hand",
+    displayName: 'right hand',
     gridSpot: getGridSpotKey([2, 4]),
-    image: "inventory-hand_r.png",
+    image: 'inventory-hand_r.png',
     additionalComponent: <CornerText align="left">R</CornerText>,
   },
 
   left_hand: {
-    displayName: "left hand",
+    displayName: 'left hand',
     gridSpot: getGridSpotKey([2, 5]),
-    image: "inventory-hand_l.png",
+    image: 'inventory-hand_l.png',
     additionalComponent: <CornerText align="right">L</CornerText>,
   },
 
   shoes: {
-    displayName: "shoes",
+    displayName: 'shoes',
     gridSpot: getGridSpotKey([3, 2]),
-    image: "inventory-shoes.png",
+    image: 'inventory-shoes.png',
   },
 
   suit_storage: {
-    displayName: "suit storage item",
+    displayName: 'suit storage item',
     gridSpot: getGridSpotKey([4, 0]),
-    image: "inventory-suit_storage.png",
+    image: 'inventory-suit_storage.png',
   },
 
   id: {
-    displayName: "ID",
+    displayName: 'ID',
     gridSpot: getGridSpotKey([4, 1]),
-    image: "inventory-id.png",
+    image: 'inventory-id.png',
   },
 
   belt: {
-    displayName: "belt",
+    displayName: 'belt',
     gridSpot: getGridSpotKey([4, 2]),
-    image: "inventory-belt.png",
+    image: 'inventory-belt.png',
   },
 
   back: {
-    displayName: "backpack",
+    displayName: 'backpack',
     gridSpot: getGridSpotKey([4, 3]),
-    image: "inventory-back.png",
+    image: 'inventory-back.png',
   },
 
   left_pocket: {
-    displayName: "left pocket",
+    displayName: 'left pocket',
     gridSpot: getGridSpotKey([4, 4]),
-    image: "inventory-pocket.png",
+    image: 'inventory-pocket.png',
   },
 
   right_pocket: {
-    displayName: "right pocket",
+    displayName: 'right pocket',
     gridSpot: getGridSpotKey([4, 5]),
-    image: "inventory-pocket.png",
+    image: 'inventory-pocket.png',
   },
 };
 
@@ -230,129 +229,129 @@ const SLOTS_LONG: Record<
   }
 > = {
   eyes: {
-    displayName: "eyewear",
+    displayName: 'eyewear',
     gridSpot: getGridSpotKey([0, 0]),
-    image: "inventory-glasses.png",
+    image: 'inventory-glasses.png',
   },
 
   head: {
-    displayName: "headwear",
+    displayName: 'headwear',
     gridSpot: getGridSpotKey([0, 1]),
-    image: "inventory-head.png",
+    image: 'inventory-head.png',
   },
 
   neck: {
-    displayName: "neckwear",
+    displayName: 'neckwear',
     gridSpot: getGridSpotKey([1, 0]),
-    image: "inventory-neck.png",
+    image: 'inventory-neck.png',
   },
 
   mask: {
-    displayName: "mask",
+    displayName: 'mask',
     gridSpot: getGridSpotKey([1, 1]),
-    image: "inventory-mask.png",
+    image: 'inventory-mask.png',
   },
 
   corgi_collar: {
-    displayName: "collar",
+    displayName: 'collar',
     gridSpot: getGridSpotKey([1, 1]),
-    image: "inventory-collar.png",
+    image: 'inventory-collar.png',
   },
 
   ears: {
-    displayName: "earwear",
+    displayName: 'earwear',
     gridSpot: getGridSpotKey([1, 2]),
-    image: "inventory-ears.png",
+    image: 'inventory-ears.png',
   },
 
   parrot_headset: {
-    displayName: "headset",
+    displayName: 'headset',
     gridSpot: getGridSpotKey([1, 2]),
-    image: "inventory-ears.png",
+    image: 'inventory-ears.png',
   },
 
   jumpsuit: {
-    displayName: "uniform",
+    displayName: 'uniform',
     gridSpot: getGridSpotKey([2, 0]),
-    image: "inventory-uniform.png",
+    image: 'inventory-uniform.png',
   },
 
   suit: {
-    displayName: "suit",
+    displayName: 'suit',
     gridSpot: getGridSpotKey([2, 1]),
-    image: "inventory-suit.png",
+    image: 'inventory-suit.png',
   },
 
   gloves: {
-    displayName: "gloves",
+    displayName: 'gloves',
     gridSpot: getGridSpotKey([2, 2]),
-    image: "inventory-gloves.png",
+    image: 'inventory-gloves.png',
   },
 
   handcuffs: {
-    displayName: "handcuffs",
+    displayName: 'handcuffs',
     gridSpot: getGridSpotKey([2, 8]),
   },
 
   shoes: {
-    displayName: "shoes",
+    displayName: 'shoes',
     gridSpot: getGridSpotKey([3, 1]),
-    image: "inventory-shoes.png",
+    image: 'inventory-shoes.png',
   },
 
   legcuffs: {
-    displayName: "legcuffs",
+    displayName: 'legcuffs',
     gridSpot: getGridSpotKey([3, 2]),
   },
 
   suit_storage: {
-    displayName: "suit storage item",
+    displayName: 'suit storage item',
     gridSpot: getGridSpotKey([3, 3]),
-    image: "inventory-suit_storage.png",
+    image: 'inventory-suit_storage.png',
   },
 
   id: {
-    displayName: "ID",
+    displayName: 'ID',
     gridSpot: getGridSpotKey([3, 4]),
-    image: "inventory-id.png",
+    image: 'inventory-id.png',
   },
 
   belt: {
-    displayName: "belt",
+    displayName: 'belt',
     gridSpot: getGridSpotKey([3, 5]),
-    image: "inventory-belt.png",
+    image: 'inventory-belt.png',
   },
 
   back: {
-    displayName: "backpack",
+    displayName: 'backpack',
     gridSpot: getGridSpotKey([3, 6]),
-    image: "inventory-back.png",
+    image: 'inventory-back.png',
   },
 
   right_hand: {
-    displayName: "right hand",
+    displayName: 'right hand',
     gridSpot: getGridSpotKey([3, 7]),
-    image: "inventory-hand_r.png",
+    image: 'inventory-hand_r.png',
     additionalComponent: <CornerText align="left">R</CornerText>,
   },
 
   left_hand: {
-    displayName: "left hand",
+    displayName: 'left hand',
     gridSpot: getGridSpotKey([3, 8]),
-    image: "inventory-hand_l.png",
+    image: 'inventory-hand_l.png',
     additionalComponent: <CornerText align="right">L</CornerText>,
   },
 
   left_pocket: {
-    displayName: "left pocket",
+    displayName: 'left pocket',
     gridSpot: getGridSpotKey([3, 9]),
-    image: "inventory-pocket.png",
+    image: 'inventory-pocket.png',
   },
 
   right_pocket: {
-    displayName: "right pocket",
+    displayName: 'right pocket',
     gridSpot: getGridSpotKey([3, 10]),
-    image: "inventory-pocket.png",
+    image: 'inventory-pocket.png',
   },
 };
 
@@ -417,149 +416,146 @@ export const StripMenu = (props, context) => {
       height={data.long_strip_menu ? 300 : 400}>
       <Window.Content>
         <Stack fill vertical>
-          {range(0, data.long_strip_menu ? ROWS_LONG : ROWS).map(row => (
+          {range(0, data.long_strip_menu ? ROWS_LONG : ROWS).map((row) => (
             <Stack.Item key={row}>
               <Stack fill>
-                {range(0, data.long_strip_menu ? COLUMNS_LONG
-                  : COLUMNS).map(column => {
-                  const key = getGridSpotKey([row, column]);
-                  const keyAtSpot = gridSpots.get(key);
+                {range(0, data.long_strip_menu ? COLUMNS_LONG : COLUMNS).map(
+                  (column) => {
+                    const key = getGridSpotKey([row, column]);
+                    const keyAtSpot = gridSpots.get(key);
 
-                  if (!keyAtSpot) {
+                    if (!keyAtSpot) {
+                      return (
+                        <Stack.Item
+                          key={key}
+                          style={{
+                            width: BUTTON_DIMENSIONS,
+                            height: BUTTON_DIMENSIONS,
+                          }}
+                        />
+                      );
+                    }
+
+                    const item = data.items[keyAtSpot];
+                    const slot = SLOTS[keyAtSpot];
+
+                    let alternateAction: AlternateAction | undefined;
+
+                    let content;
+                    let tooltip;
+
+                    if (item === null) {
+                      tooltip = slot.displayName;
+                    } else if ('name' in item) {
+                      if (item.alternate) {
+                        alternateAction = ALTERNATE_ACTIONS[item.alternate];
+                      }
+
+                      content = (
+                        <Box
+                          as="img"
+                          src={`data:image/jpeg;base64,${item.icon}`}
+                          height="100%"
+                          width="100%"
+                          style={{
+                            '-ms-interpolation-mode': 'nearest-neighbor',
+                            'vertical-align': 'middle',
+                          }}
+                        />
+                      );
+
+                      tooltip = item.name;
+                    } else if ('obscured' in item) {
+                      content = (
+                        <Icon
+                          name={
+                            item.obscured === ObscuringLevel.Completely
+                              ? 'ban'
+                              : 'eye-slash'
+                          }
+                          size={3}
+                          ml={0}
+                          mt={1.3}
+                          style={{
+                            'text-align': 'center',
+                            height: '100%',
+                            width: '100%',
+                          }}
+                        />
+                      );
+
+                      tooltip = `obscured ${slot.displayName}`;
+                    }
+
                     return (
                       <Stack.Item
                         key={key}
                         style={{
                           width: BUTTON_DIMENSIONS,
                           height: BUTTON_DIMENSIONS,
-                        }}
-                      />
-                    );
-                  }
-
-                  const item = data.items[keyAtSpot];
-                  const slot = SLOTS[keyAtSpot];
-
-                  let alternateAction: AlternateAction | undefined;
-
-                  let content;
-                  let tooltip;
-
-                  if (item === null) {
-                    tooltip = slot.displayName;
-                  } else if ("name" in item) {
-                    if (item.alternate) {
-                      alternateAction = ALTERNATE_ACTIONS[item.alternate];
-                    }
-
-                    content = (
-                      <Box
-                        as="img"
-                        src={`data:image/jpeg;base64,${item.icon}`}
-                        height="100%"
-                        width="100%"
-                        style={{
-                          "-ms-interpolation-mode": "nearest-neighbor",
-                          "vertical-align": "middle",
-                        }}
-                      />
-                    );
-
-                    tooltip = item.name;
-                  } else if ("obscured" in item) {
-                    content = (
-                      <Icon
-                        name={
-                          item.obscured === ObscuringLevel.Completely
-                            ? "ban"
-                            : "eye-slash"
-                        }
-                        size={3}
-                        ml={0}
-                        mt={1.3}
-                        style={{
-                          "text-align": "center",
-                          height: "100%",
-                          width: "100%",
-                        }}
-                      />
-                    );
-
-                    tooltip = `obscured ${slot.displayName}`;
-                  }
-
-                  return (
-                    <Stack.Item
-                      key={key}
-                      style={{
-                        width: BUTTON_DIMENSIONS,
-                        height: BUTTON_DIMENSIONS,
-                      }}
-                    >
-                      <Box
-                        style={{
-                          position: "relative",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                      >
-                        <Button
-                          onClick={() => {
-                            act("use", {
-                              key: keyAtSpot,
-                            });
-                          }}
-                          fluid
-                          tooltip={tooltip}
+                        }}>
+                        <Box
                           style={{
-                            background: item?.interacting
-                              ? "hsl(39, 73%, 30%)"
-                              : undefined,
-                            position: "relative",
-                            width: "100%",
-                            height: "100%",
-                            padding: 0,
-                          }}
-                        >
-                          {slot.image && (
-                            <Box
-                              as="img"
-                              className="centered-image"
-                              src={resolveAsset(slot.image)}
-                              opacity={0.7}
-                            />
-                          )}
-
-                          <Box style={{ position: "relative" }}>
-                            {content}
-                          </Box>
-
-                          {slot.additionalComponent}
-                        </Button>
-
-                        {alternateAction !== undefined && (
+                            position: 'relative',
+                            width: '100%',
+                            height: '100%',
+                          }}>
                           <Button
                             onClick={() => {
-                              act("alt", {
+                              act('use', {
                                 key: keyAtSpot,
                               });
                             }}
-                            tooltip={alternateAction.text}
+                            fluid
+                            tooltip={tooltip}
                             style={{
-                              background: "rgba(0, 0, 0, 0.6)",
-                              position: "absolute",
-                              bottom: 0,
-                              right: 0,
-                              "z-index": 2,
-                            }}
-                          >
-                            <Icon name={alternateAction.icon} />
+                              background: item?.interacting
+                                ? 'hsl(39, 73%, 30%)'
+                                : undefined,
+                              position: 'relative',
+                              width: '100%',
+                              height: '100%',
+                              padding: 0,
+                            }}>
+                            {slot.image && (
+                              <Box
+                                as="img"
+                                className="centered-image"
+                                src={resolveAsset(slot.image)}
+                                opacity={0.7}
+                              />
+                            )}
+
+                            <Box style={{ position: 'relative' }}>
+                              {content}
+                            </Box>
+
+                            {slot.additionalComponent}
                           </Button>
-                        )}
-                      </Box>
-                    </Stack.Item>
-                  );
-                })}
+
+                          {alternateAction !== undefined && (
+                            <Button
+                              onClick={() => {
+                                act('alt', {
+                                  key: keyAtSpot,
+                                });
+                              }}
+                              tooltip={alternateAction.text}
+                              style={{
+                                background: 'rgba(0, 0, 0, 0.6)',
+                                position: 'absolute',
+                                bottom: 0,
+                                right: 0,
+                                'z-index': 2,
+                              }}>
+                              <Icon name={alternateAction.icon} />
+                            </Button>
+                          )}
+                        </Box>
+                      </Stack.Item>
+                    );
+                  }
+                )}
               </Stack>
             </Stack.Item>
           ))}

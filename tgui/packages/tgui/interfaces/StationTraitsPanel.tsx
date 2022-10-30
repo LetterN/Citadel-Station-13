@@ -156,7 +156,8 @@ const FutureStationTraitsPage = (props, context) => {
               onClick={() =>
                 act('setup_future_traits', {
                   station_traits: [],
-                })}>
+                })
+              }>
               Prevent station traits from running next round
             </Button>
           </Box>
@@ -182,16 +183,17 @@ const ViewStationTraitsPage = (props, context) => {
                 color="red"
                 disabled={data.too_late_to_revert || !stationTrait.can_revert}
                 tooltip={
-                  (!stationTrait.can_revert
-                    && 'This trait is not revertable.')
-                  || (data.too_late_to_revert
-                    && "It's too late to revert station traits, the round has already started.")
+                  (!stationTrait.can_revert &&
+                    'This trait is not revertable.') ||
+                  (data.too_late_to_revert &&
+                    "It's too late to revert station traits, the round has already started.")
                 }
                 icon="times"
                 onClick={() =>
                   act('revert', {
                     ref: stationTrait.ref,
-                  })}
+                  })
+                }
               />
             </Stack.Item>
           </Stack>

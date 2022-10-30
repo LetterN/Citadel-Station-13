@@ -14,10 +14,7 @@ export const CommandReport = (props, context) => {
     announce_contents,
   } = data;
   return (
-    <Window
-      title="Create Command Report"
-      width={325}
-      height={525}>
+    <Window title="Create Command Report" width={325} height={525}>
       <Window.Content>
         <Stack vertical>
           <Stack.Item>
@@ -26,18 +23,24 @@ export const CommandReport = (props, context) => {
                 width="100%"
                 selected={command_name}
                 options={command_name_presets}
-                onSelected={value => act('update_command_name', {
-                  updated_name: value,
-                })} />
+                onSelected={(value) =>
+                  act('update_command_name', {
+                    updated_name: value,
+                  })
+                }
+              />
               {!!custom_name && (
                 <Input
                   width="100%"
                   mt={1}
                   value={command_name}
                   placeholder={command_name}
-                  onChange={(e, value) => act("update_command_name", {
-                    updated_name: value,
-                  })} />
+                  onChange={(e, value) =>
+                    act('update_command_name', {
+                      updated_name: value,
+                    })
+                  }
+                />
               )}
             </Section>
           </Stack.Item>
@@ -47,9 +50,12 @@ export const CommandReport = (props, context) => {
                 width="100%"
                 displayText={played_sound}
                 options={announcer_sounds}
-                onSelected={value => act('set_report_sound', {
-                  picked_sound: value,
-                })} />
+                onSelected={(value) =>
+                  act('set_report_sound', {
+                    picked_sound: value,
+                  })
+                }
+              />
             </Section>
           </Stack.Item>
           <Stack.Item>
@@ -58,15 +64,18 @@ export const CommandReport = (props, context) => {
                 height="200px"
                 mb={1}
                 value={command_report_content}
-                onChange={(e, value) => act("update_report_contents", {
-                  updated_contents: value,
-                })} />
+                onChange={(e, value) =>
+                  act('update_report_contents', {
+                    updated_contents: value,
+                  })
+                }
+              />
               <Stack vertical>
                 <Stack.Item>
                   <Button.Checkbox
                     fluid
                     checked={announce_contents}
-                    onClick={() => act("toggle_announce")}>
+                    onClick={() => act('toggle_announce')}>
                     Announce Contents
                   </Button.Checkbox>
                 </Stack.Item>
@@ -77,7 +86,8 @@ export const CommandReport = (props, context) => {
                     color="good"
                     textAlign="center"
                     content="Submit Report"
-                    onClick={() => act("submit_report")} />
+                    onClick={() => act('submit_report')}
+                  />
                 </Stack.Item>
               </Stack>
             </Section>

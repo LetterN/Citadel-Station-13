@@ -15,34 +15,30 @@ export const Jukebox = (props, context) => {
     cost_for_play,
     has_access,
   } = data;
-  const songs = flow([
-    sortBy(
-      song => song.name),
-  ])(data.songs || []);
+  const songs = flow([sortBy((song) => song.name)])(data.songs || []);
   const queued_tracks = data.queued_tracks || [];
   return (
-    <Window
-      width={420}
-      height={480}>
+    <Window width={420} height={480}>
       <Window.Content>
         <Section
           title="Machine Controls"
-          buttons={(
+          buttons={
             <Button
               icon={active ? 'pause' : 'play'}
               content={active ? 'Stop' : 'Play'}
               selected={active}
               disabled={!has_access}
-              onClick={() => act('toggle')} />
-          )}>
+              onClick={() => act('toggle')}
+            />
+          }>
           <Stack>
             <Stack.Item>
               <LabeledList>
                 <LabeledList.Item label="Current Track">
-                  {track_selected ? track_selected : "No Track Selected"}
+                  {track_selected ? track_selected : 'No Track Selected'}
                 </LabeledList.Item>
                 <LabeledList.Item label="Track Length">
-                  {track_selected ? track_length : "No Track Selected"}
+                  {track_selected ? track_length : 'No Track Selected'}
                 </LabeledList.Item>
               </LabeledList>
             </Stack.Item>
@@ -60,9 +56,12 @@ export const Jukebox = (props, context) => {
                       step={1}
                       stepPixelSize={1}
                       disabled={!has_access}
-                      onDrag={(e, value) => act('set_volume', {
-                        volume: value,
-                      })} />
+                      onDrag={(e, value) =>
+                        act('set_volume', {
+                          volume: value,
+                        })
+                      }
+                    />
                     <Button
                       fluid
                       position="absolute"
@@ -71,9 +70,12 @@ export const Jukebox = (props, context) => {
                       color="transparent"
                       icon="fast-backward"
                       disabled={!has_access}
-                      onClick={() => act('set_volume', {
-                        volume: "min",
-                      })} />
+                      onClick={() =>
+                        act('set_volume', {
+                          volume: 'min',
+                        })
+                      }
+                    />
                     <Button
                       fluid
                       position="absolute"
@@ -82,9 +84,12 @@ export const Jukebox = (props, context) => {
                       color="transparent"
                       icon="fast-forward"
                       disabled={!has_access}
-                      onClick={() => act('set_volume', {
-                        volume: "max",
-                      })} />
+                      onClick={() =>
+                        act('set_volume', {
+                          volume: 'max',
+                        })
+                      }
+                    />
                     <Button
                       fluid
                       position="absolute"
@@ -93,9 +98,12 @@ export const Jukebox = (props, context) => {
                       color="transparent"
                       icon="undo"
                       disabled={!has_access}
-                      onClick={() => act('set_volume', {
-                        volume: "reset",
-                      })} />
+                      onClick={() =>
+                        act('set_volume', {
+                          volume: 'reset',
+                        })
+                      }
+                    />
                   </Box>
                 </LabeledControls.Item>
               </LabeledControls>
@@ -103,7 +111,7 @@ export const Jukebox = (props, context) => {
           </Stack>
           <LabeledList>
             <LabeledList.Item label="Cost to Queue">
-              {cost_for_play} CR {has_access ? "(Cost waived)" : ""}
+              {cost_for_play} CR {has_access ? '(Cost waived)' : ''}
             </LabeledList.Item>
           </LabeledList>
         </Section>
@@ -113,11 +121,14 @@ export const Jukebox = (props, context) => {
               <Dropdown
                 width="100%"
                 overflow-y="scroll"
-                options={songs.map(song => song.name)}
+                options={songs.map((song) => song.name)}
                 selected="Select a Track"
-                onSelected={value => act('select_track', {
-                  track: value,
-                })} />
+                onSelected={(value) =>
+                  act('select_track', {
+                    track: value,
+                  })
+                }
+              />
             </Stack.Item>
             <Stack.Item>
               <Button
@@ -129,12 +140,8 @@ export const Jukebox = (props, context) => {
           </Stack>
           <Section fill vertical>
             <Tabs vertical>
-              {queued_tracks.map(song => (
-                <Tabs.Tab
-                  key={song.name}
-                >
-                  {song.name}
-                </Tabs.Tab>
+              {queued_tracks.map((song) => (
+                <Tabs.Tab key={song.name}>{song.name}</Tabs.Tab>
               ))}
             </Tabs>
           </Section>

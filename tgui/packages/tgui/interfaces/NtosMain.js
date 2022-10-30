@@ -16,9 +16,9 @@ export const NtosMain = (props, context) => {
   } = data;
   return (
     <NtosWindow
-      title={device_theme === 'syndicate'
-        && 'Syndix Main Menu'
-        || 'NtOS Main Menu'}
+      title={
+        (device_theme === 'syndicate' && 'Syndix Main Menu') || 'NtOS Main Menu'
+      }
       theme={device_theme}
       width={400}
       height={500}>
@@ -32,9 +32,7 @@ export const NtosMain = (props, context) => {
               onClick={() => act('PC_toggle_light')}>
               Flashlight: {light_on ? 'ON' : 'OFF'}
             </Button>
-            <Button
-              ml={1}
-              onClick={() => act('PC_light_color')}>
+            <Button ml={1} onClick={() => act('PC_light_color')}>
               Color:
               <ColorBox ml={1} color={comp_light_color} />
             </Button>
@@ -43,28 +41,24 @@ export const NtosMain = (props, context) => {
         {!!cardholder && (
           <Section
             title="User Login"
-            buttons={(
+            buttons={
               <Button
                 icon="eject"
                 content="Eject ID"
                 disabled={!login.IDName}
-                onClick={() => act('PC_Eject_Disk', { name: "ID" })}
+                onClick={() => act('PC_Eject_Disk', { name: 'ID' })}
               />
-            )}>
+            }>
             <Table>
-              <Table.Row>
-                ID Name: {login.IDName}
-              </Table.Row>
-              <Table.Row>
-                Assignment: {login.IDJob}
-              </Table.Row>
+              <Table.Row>ID Name: {login.IDName}</Table.Row>
+              <Table.Row>Assignment: {login.IDJob}</Table.Row>
             </Table>
           </Section>
         )}
         {!!removable_media.length && (
           <Section title="Media Eject">
             <Table>
-              {removable_media.map(device => (
+              {removable_media.map((device) => (
                 <Table.Row key={device}>
                   <Table.Cell>
                     <Button
@@ -82,7 +76,7 @@ export const NtosMain = (props, context) => {
         )}
         <Section title="Programs">
           <Table>
-            {programs.map(program => (
+            {programs.map((program) => (
               <Table.Row key={program.name}>
                 <Table.Cell>
                   <Button
@@ -90,9 +84,12 @@ export const NtosMain = (props, context) => {
                     color={program.alert ? 'yellow' : 'transparent'}
                     icon={program.icon}
                     content={program.desc}
-                    onClick={() => act('PC_runprogram', {
-                      name: program.name,
-                    })} />
+                    onClick={() =>
+                      act('PC_runprogram', {
+                        name: program.name,
+                      })
+                    }
+                  />
                 </Table.Cell>
                 <Table.Cell collapsing width="18px">
                   {!!program.running && (
@@ -101,9 +98,12 @@ export const NtosMain = (props, context) => {
                       icon="times"
                       tooltip="Close program"
                       tooltipPosition="left"
-                      onClick={() => act('PC_killprogram', {
-                        name: program.name,
-                      })} />
+                      onClick={() =>
+                        act('PC_killprogram', {
+                          name: program.name,
+                        })
+                      }
+                    />
                   )}
                 </Table.Cell>
               </Table.Row>

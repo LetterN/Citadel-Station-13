@@ -7,23 +7,18 @@ interface Info {
   HONOR_RATVAR: BooleanLike;
 }
 
-let REC_RATVAR = "";
+let REC_RATVAR = '';
 // You may ask "why is this not inside ClockworkSlab"
 // It's because cslab gets called every time. Lag is bad.
-for (let index = 0; index < Math.min(Math.random()*100); index++) {
-  REC_RATVAR += "HONOR RATVAR ";
+for (let index = 0; index < Math.min(Math.random() * 100); index++) {
+  REC_RATVAR += 'HONOR RATVAR ';
 }
 
 export const AntagInfoClockwork = (props, context) => {
   const { data } = useBackend<Info>(context);
-  const {
-    HONOR_RATVAR = false,
-  } = data;
+  const { HONOR_RATVAR = false } = data;
   return (
-    <Window
-      width={400}
-      height={400}
-      theme="clockcult">
+    <Window width={400} height={400} theme="clockcult">
       <Window.Content>
         <Section fill>
           <Stack vertical fill textAlign="center">
@@ -37,25 +32,16 @@ export const AntagInfoClockwork = (props, context) => {
             </Stack.Item>
             <br />
             <Stack.Item>
-              <Section
-                title="This is Ratvar's will"
-                vertical
-                fill>
-                <Stack.Item grow >
+              <Section title="This is Ratvar's will" vertical fill>
+                <Stack.Item grow>
                   {HONOR_RATVAR ? (
-                    <Stack.Item
-                      textColor="#BE8700"
-                      fontSize={2}
-                      bold>
+                    <Stack.Item textColor="#BE8700" fontSize={2} bold>
                       {REC_RATVAR}
                     </Stack.Item>
                   ) : (
-                    <Stack.Item
-                      textColor="#dab44d"
-                      fontSize={2}
-                      bold>
-                      Construct the Ark of the
-                      Clockwork Justicar and free Ratvar.
+                    <Stack.Item textColor="#dab44d" fontSize={2} bold>
+                      Construct the Ark of the Clockwork Justicar and free
+                      Ratvar.
                     </Stack.Item>
                   )}
                 </Stack.Item>

@@ -12,28 +12,18 @@ export const TelecommsLogBrowser = (props, context) => {
   const { act, data } = useBackend(context);
   const {
     notice,
-    network = "NULL",
+    network = 'NULL',
     servers,
     selected = null,
     selected_logs,
   } = data;
-  const [
-    tab,
-    setTab,
-  ] = useSharedState(context, 'tab', 'servers');
-  const operational = (selected && selected.status);
+  const [tab, setTab] = useSharedState(context, 'tab', 'servers');
+  const operational = selected && selected.status;
   return (
-    <Window
-      theme="ntos"
-      width={575}
-      height={400}>
+    <Window theme="ntos" width={575} height={400}>
       <Window.Content scrollable>
         <Fragment>
-          {!!notice && (
-            <NoticeBox>
-              {notice}
-            </NoticeBox>
-          )}
+          {!!notice && <NoticeBox>{notice}</NoticeBox>}
           <Section title="Network Control">
             <LabeledList>
               <LabeledList.Item label="Network">
@@ -41,13 +31,16 @@ export const TelecommsLogBrowser = (props, context) => {
                   value={network}
                   width="150px"
                   maxLength={15}
-                  onChange={(e, value) => act('network', {
-                    'value': value,
-                  })} />
+                  onChange={(e, value) =>
+                    act('network', {
+                      'value': value,
+                    })
+                  }
+                />
               </LabeledList.Item>
               <LabeledList.Item
                 label="Memory"
-                buttons={(
+                buttons={
                   <Fragment>
                     <Button
                       icon="minus-circle"
@@ -62,83 +55,67 @@ export const TelecommsLogBrowser = (props, context) => {
                       Probe Network
                     </Button>
                   </Fragment>
-                )}>
-                {servers ? (
-                  `${servers.length} currently probed and buffered`
-                ) : (
-                  'Buffer is empty!'
-                )}
+                }>
+                {servers
+                  ? `${servers.length} currently probed and buffered`
+                  : 'Buffer is empty!'}
               </LabeledList.Item>
               <LabeledList.Item
                 label="Selected Server"
-                buttons={(
-                  <Button
-                    disabled={!selected}
-                    onClick={() => act('mainmenu')}>
+                buttons={
+                  <Button disabled={!selected} onClick={() => act('mainmenu')}>
                     Disconnect
                   </Button>
-                )}>
-                {selected ? (
-                  `${selected.name} (${selected.id})`
-                ) : (
-                  "None (None)"
-                )}
+                }>
+                {selected ? `${selected.name} (${selected.id})` : 'None (None)'}
               </LabeledList.Item>
               <LabeledList.Item label="Recorded Traffic">
-                {selected ? (
-                  selected.traffic <= 1024 ? (
-                    `${selected.traffic} Gigabytes`
-                  ) : (
-                    `${Math.round(selected.traffic/1024)} Terrabytes`
-                  )
-                ) : (
-                  '0 Gigabytes'
-                )}
+                {selected
+                  ? selected.traffic <= 1024
+                    ? `${selected.traffic} Gigabytes`
+                    : `${Math.round(selected.traffic / 1024)} Terrabytes`
+                  : '0 Gigabytes'}
               </LabeledList.Item>
               <LabeledList.Item
                 label="Server Status"
                 color={operational ? 'good' : 'bad'}>
-                {operational ? (
-                  'Running'
-                ) : (
-                  'Server down!'
-                )}
+                {operational ? 'Running' : 'Server down!'}
               </LabeledList.Item>
             </LabeledList>
           </Section>
           <Tabs>
             <Tabs.Tab
-              selected={tab === "servers"}
+              selected={tab === 'servers'}
               icon="server"
-              onClick={() => setTab("servers")}>
+              onClick={() => setTab('servers')}>
               Servers
             </Tabs.Tab>
             <Tabs.Tab
               disabled={!operational}
               icon="file"
-              selected={tab === "messages"}
-              onClick={() => setTab("messages")}>
+              selected={tab === 'messages'}
+              onClick={() => setTab('messages')}>
               Messages
             </Tabs.Tab>
           </Tabs>
-          {(tab === "messages" && operational) ? (
+          {tab === 'messages' && operational ? (
             <Section title="Logs">
-              {(operational && selected_logs) ? (
-                selected_logs.map(logs => (
-                  <Section
-                    level={4}
-                    key={logs.ref}>
+              {operational && selected_logs
+                ? selected_logs.map((logs) => (
+                  <Section level={4} key={logs.ref}>
                     <LabeledList>
                       <LabeledList.Item
                         label="Filename"
-                        buttons={(
+                        buttons={
                           <Button
-                            onClick={() => act('delete', {
-                              'value': logs.ref,
-                            })}>
+                            onClick={() =>
+                              act('delete', {
+                                'value': logs.ref,
+                              })
+                            }>
                             Delete
                           </Button>
-                        )}>
+                        }>
                         {logs.name}
                       </LabeledList.Item>
                       <LabeledList.Item label="Data type">
@@ -161,28 +138,29 @@ export const TelecommsLogBrowser = (props, context) => {
                     </LabeledList>
                   </Section>
                 ))
-              ) : (
-                "No server selected!"
-              )}
+                : 'No server selected!'}
             </Section>
           ) : (
             <Section>
-              {(servers && servers.length) ? (
+              {servers && servers.length ? (
                 <LabeledList>
-                  {servers.map(server => (
+                  {servers.map((server) => (
                     <LabeledList.Item
                       key={server.name}
                       label={`${server.ref}`}
-                      buttons={(
+                      buttons={
                         <Button
-                          selected={data.selected
-                          && (server.ref === data.selected.ref)}
-                          onClick={() => act('viewmachine', {
-                            'value': server.id,
-                          })}>
+                          selected={
+                            data.selected && server.ref === data.selected.ref
+                          }
+                          onClick={() =>
+                            act('viewmachine', {
+                              'value': server.id,
+                            })
+                          }>
                           Connect
                         </Button>
-                      )}>
+                      }>
                       {`${server.name} (${server.id})`}
                     </LabeledList.Item>
                   ))}

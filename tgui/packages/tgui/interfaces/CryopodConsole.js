@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, Section, Stack } from '../components';
+import { Button, LabeledList, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
 export const CryopodConsole = (props, context) => {
@@ -35,10 +35,8 @@ const CrewList = (props, context) => {
   const { frozen_crew } = data;
 
   return (
-    frozen_crew.length && (
-      <Section
-        fill
-        scrollable>
+    (frozen_crew.length && (
+      <Section fill scrollable>
         <LabeledList>
           {frozen_crew.map((person) => (
             <LabeledList.Item key={person} label={person.name}>
@@ -47,9 +45,7 @@ const CrewList = (props, context) => {
           ))}
         </LabeledList>
       </Section>
-    ) || (
-      <NoticeBox>No stored crew!</NoticeBox>
-    )
+    )) || <NoticeBox>No stored crew!</NoticeBox>
   );
 };
 
@@ -58,24 +54,21 @@ const ItemList = (props, context) => {
   const { item_meta } = data;
 
   return (
-    item_meta.length && (
-      <Section
-        fill
-        scrollable>
+    (item_meta.length && (
+      <Section fill scrollable>
         <LabeledList>
           {item_meta.map((metadat) => (
             <LabeledList.Item key={metadat.name} label={metadat.name}>
-              <Button onClick={() => {
-                act("item", { "item": metadat.ref });
-              }}>
+              <Button
+                onClick={() => {
+                  act('item', { 'item': metadat.ref });
+                }}>
                 Recover Items
               </Button>
             </LabeledList.Item>
           ))}
         </LabeledList>
       </Section>
-    ) || (
-      <NoticeBox>No stored items!</NoticeBox>
-    )
+    )) || <NoticeBox>No stored items!</NoticeBox>
   );
 };

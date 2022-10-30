@@ -318,9 +318,9 @@ const typevars = (type) => {
     case 'targeted/touch':
       ret = ret.filter(
         (variable) =>
-          variable.name !== 'range'
-          && variable.name !== 'invocation_type'
-          && variable.name !== 'selection_type'
+          variable.name !== 'range' &&
+          variable.name !== 'invocation_type' &&
+          variable.name !== 'selection_type'
       );
       ret.push(
         {
@@ -556,7 +556,8 @@ const SDQLSpellInput = (props, context) => {
           options={options}
           displayText={options[saved_vars[name]] ?? default_value}
           onSelected={(value) =>
-            act('variable', { name, value: options.indexOf(value) })}
+            act('variable', { name, value: options.indexOf(value) })
+          }
         />
       );
     case 'list':
@@ -584,7 +585,8 @@ const SDQLSpellListEntry = (props, context) => {
                 <Input
                   value={name}
                   onChange={(e, value) =>
-                    act('list_variable_rename', { list, name, new_name: value })}
+                    act('list_variable_rename', { list, name, new_name: value })
+                  }
                 />
               ) : (
                 <Box inline bold color="label" mr="6px">
@@ -601,7 +603,8 @@ const SDQLSpellListEntry = (props, context) => {
                   options={['num', 'bool', 'string', 'path', 'icon', 'list']}
                   displayText={type}
                   onSelected={(value) =>
-                    act('list_variable_change_type', { list, name, value })}
+                    act('list_variable_change_type', { list, name, value })
+                  }
                 />
               )
             }
@@ -649,7 +652,8 @@ const SDQLSpellListVarInput = (props, context) => {
         <NumberInput
           value={value}
           onChange={(e, value) =>
-            act('list_variable_change_value', { list, name, value })}
+            act('list_variable_change_value', { list, name, value })
+          }
         />
       );
     case 'bool':
@@ -668,7 +672,8 @@ const SDQLSpellListVarInput = (props, context) => {
           fluid
           value={value}
           onChange={(e, value) =>
-            act('list_variable_change_value', { list, name, value })}
+            act('list_variable_change_value', { list, name, value })
+          }
         />
       );
     case 'list':
@@ -741,22 +746,22 @@ const SDQLSpellIcons = (props, context) => {
             />
           </Section>
         )}
-        {type
-          && vars.some((entry) => entry.name === 'ranged_mousepointer')
-          && saved_vars['ranged_mousepointer'] && (
-          <Section title="Mouse Cursor">
-            <Box
-              as="img"
-              height="64px"
-              width="auto"
-              m={0}
-              src={`data:image/jpeg;base64,${mouse_icon}`}
-              style={{
-                '-ms-interpolation-mode': 'nearest-neighbor',
-              }}
-            />
-          </Section>
-        )}
+        {type &&
+          vars.some((entry) => entry.name === 'ranged_mousepointer') &&
+          saved_vars['ranged_mousepointer'] && (
+            <Section title="Mouse Cursor">
+              <Box
+                as="img"
+                height="64px"
+                width="auto"
+                m={0}
+                src={`data:image/jpeg;base64,${mouse_icon}`}
+                style={{
+                  '-ms-interpolation-mode': 'nearest-neighbor',
+                }}
+              />
+            </Section>
+          )}
         {type && 'overlay' in saved_vars && saved_vars['overlay'] === 1 && (
           <Section title="Overlay Icon">
             <Box

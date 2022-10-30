@@ -12,7 +12,7 @@ export const BeakerContents = (props) => {
         <Box key={chemical.name} color="label">
           <AnimatedNumber initial={0} value={chemical.volume} />
           {' units of ' + chemical.name}
-          {chemical.purity < 1 && '(Purity: '+chemical.purity+')'}
+          {chemical.purity < 1 && '(Purity: ' + chemical.purity + ')'}
         </Box>
       ))}
     </Box>

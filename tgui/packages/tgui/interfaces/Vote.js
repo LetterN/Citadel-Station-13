@@ -11,7 +11,8 @@ export const Vote = (props, context) => {
    */
   let windowTitle = 'Vote';
   if (mode) {
-    windowTitle += ': ' + (question || mode).replace(/^\w/, (c) => c.toUpperCase());
+    windowTitle +=
+      ': ' + (question || mode).replace(/^\w/, (c) => c.toUpperCase());
   }
 
   return (
@@ -36,12 +37,7 @@ export const Vote = (props, context) => {
  */
 const VoteOptions = (props, context) => {
   const { act, data } = useBackend(context);
-  const {
-    allow_vote_restart,
-    allow_vote_map,
-    lower_admin,
-    upper_admin,
-  } = data;
+  const { allow_vote_restart, allow_vote_map, lower_admin, upper_admin } = data;
 
   return (
     <Stack.Item>
@@ -106,7 +102,8 @@ const VotersList = (props, context) => {
 
   return (
     <Stack.Item>
-      <Collapsible title={`View Voters${voting.length ? `: ${voting.length}` : ""}`}>
+      <Collapsible
+        title={`View Voters${voting.length ? `: ${voting.length}` : ''}`}>
         <Section height={8} fill scrollable>
           {voting.map((voter) => {
             return <Box key={voter}>{voter}</Box>;

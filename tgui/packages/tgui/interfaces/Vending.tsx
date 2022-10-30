@@ -18,7 +18,7 @@ type VendingData = {
   extended_inventory: boolean;
   access: boolean;
   vending_machine_input: CustomInput[];
-}
+};
 
 type ProductRecord = {
   path: string;
@@ -27,7 +27,7 @@ type ProductRecord = {
   max_amount: number;
   ref: string;
   amount: number;
-}
+};
 
 type CoinRecord = {
   path: string;
@@ -36,7 +36,7 @@ type CoinRecord = {
   max_amount: number;
   ref: string;
   premium: boolean;
-}
+};
 
 type HiddenRecord = {
   path: string;
@@ -45,124 +45,113 @@ type HiddenRecord = {
   max_amount: number;
   ref: string;
   premium: boolean;
-}
+};
 
 type UserData = {
   name: string;
   cash: number;
   job: string;
   department: string;
-}
+};
 
 type StockItem = {
   name: string;
   amount: number;
   colorable: boolean;
-}
+};
 
 type CustomInput = {
   name: string;
   price: number;
   img: string;
-}
+};
 
 const VendingRow = (props, context) => {
   const { act, data } = useBackend<VendingData>(context);
-  const {
-    product,
-    productStock,
-    custom,
-  } = props;
-  const {
-    onstation,
-    department,
-    user,
-  } = data;
-  const free = (
-    !onstation
-    || (product.price === 0)
-    || ((department && user) // department AND user MUST exist
-      && (department === user.department)
-      && !product.premium)
-  );
+  const { product, productStock, custom } = props;
+  const { onstation, department, user } = data;
+  const free =
+    !onstation ||
+    product.price === 0 ||
+    (department &&
+      user && // department AND user MUST exist
+      department === user.department &&
+      !product.premium);
 
   return (
     <Table.Row className="candystripe">
       <Table.Cell collapsing>
-        {product.img && (
+        {(product.img && (
           <img
             src={`data:image/jpeg;base64,${product.img}`}
             style={{
               'vertical-align': 'middle',
               'horizontal-align': 'middle',
-            }} />
-        ) || (
+            }}
+          />
+        )) || (
           <span
-            className={classes([
-              'vending32x32',
-              product.path,
-            ])}
+            className={classes(['vending32x32', product.path])}
             style={{
               'vertical-align': 'middle',
               'horizontal-align': 'middle',
-            }} />
+            }}
+          />
         )}
       </Table.Cell>
-      <Table.Cell bold>
-        {product.name}
-      </Table.Cell>
+      <Table.Cell bold>{product.name}</Table.Cell>
       <Table.Cell collapsing textAlign="center">
         <Box
-          color={(
-            custom && 'good'
-            || productStock.amount <= 0 && 'bad'
-            || productStock.amount <= (product.max_amount / 2) && 'average'
-            || 'good'
-          )}>
+          color={
+            (custom && 'good') ||
+            (productStock.amount <= 0 && 'bad') ||
+            (productStock.amount <= product.max_amount / 2 && 'average') ||
+            'good'
+          }>
           {custom ? product.amount : productStock.amount} in stock
         </Box>
       </Table.Cell>
       <Table.Cell collapsing textAlign="center">
-        {custom && (
+        {(custom && (
           <Button
             fluid
             content={data.access ? 'FREE' : product.price + ' cr'}
-            onClick={() => act('dispense', {
-              'item': product.name,
-            })} />
-        ) || (
+            onClick={() =>
+              act('dispense', {
+                'item': product.name,
+              })
+            }
+          />
+        )) || (
           <Button
             fluid
-            disabled={(
-              productStock.amount === 0
-              || !free && (
-                !user
-                || product.price > user.cash
-              )
-            )}
-            content={free
-              ? 'FREE' : `${product.price} cr`}
-            onClick={() => act('vend', {
-              'ref': product.ref,
-            })} />
+            disabled={
+              productStock.amount === 0 ||
+              (!free && (!user || product.price > user.cash))
+            }
+            content={free ? 'FREE' : `${product.price} cr`}
+            onClick={() =>
+              act('vend', {
+                'ref': product.ref,
+              })
+            }
+          />
         )}
       </Table.Cell>
       <Table.Cell>
-        {
-          productStock?.colorable
-            ? (
-              <Button
-                fluid
-                icon="palette"
-                disabled={
-                  productStock?.amount === 0
-                  || (!free && (!user || product.price > user.cash))
-                }
-                onClick={() => act('select_colors', { ref: product.ref })}
-              />
-            )
-            : ""
-        }
+        {productStock?.colorable ? (
+          <Button
+            fluid
+            icon="palette"
+            disabled={
+              productStock?.amount === 0 ||
+              (!free && (!user || product.price > user.cash))
+            }
+            onClick={() => act('select_colors', { ref: product.ref })}
+          />
+        ) : (
+          ''
+        )}
       </Table.Cell>
     </Table.Row>
   );
@@ -178,51 +167,37 @@ export const Vending = (props, context) => {
     hidden_records = [],
     stock,
   } = data;
-  const [
-    searchText,
-    setSearchText,
-  ] = useLocalState(context, 'searchText', '');
+  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
   let inventory;
   let custom = false;
   if (data.vending_machine_input) {
     inventory = data.vending_machine_input;
     custom = true;
-  }
-  else {
-    inventory = [
-      ...product_records,
-      ...coin_records,
-    ];
+  } else {
+    inventory = [...product_records, ...coin_records];
     if (data.extended_inventory) {
-      inventory = [
-        ...inventory,
-        ...hidden_records,
-      ];
+      inventory = [...inventory, ...hidden_records];
     }
   }
   // Just in case we still have undefined values in the list
-  inventory = inventory.filter(item => !!item);
+  inventory = inventory.filter((item) => !!item);
   // Filter by search text
   inventory = prepareSearch(inventory, searchText);
   return (
-    <Window
-      title="Vending Machine"
-      width={450}
-      height={600}>
+    <Window title="Vending Machine" width={450} height={600}>
       <Window.Content scrollable>
         {!!onstation && (
           <Section title="User">
-            {user && (
+            {(user && (
               <Box>
-                Welcome, <b>{user.name}</b>,
-                {' '}
-                <b>{user.job || 'Unemployed'}</b>!
+                Welcome, <b>{user.name}</b>, <b>{user.job || 'Unemployed'}</b>!
                 <br />
                 Your balance is <b>{user.cash} credits</b>.
               </Box>
-            ) || (
+            )) || (
               <Box color="light-grey">
-                No registered ID card!<br />
+                No registered ID card!
+                <br />
                 Please contact your local HoP!
               </Box>
             )}
@@ -237,16 +212,18 @@ export const Vending = (props, context) => {
               <Input
                 fluid
                 placeholder="Search for products..."
-                onInput={(e, value) => setSearchText(value)} />
+                onInput={(e, value) => setSearchText(value)}
+              />
             </Table.Cell>
           </Table>
           <Table>
-            {inventory.map(product => (
+            {inventory.map((product) => (
               <VendingRow
                 key={product.name}
                 custom={custom}
                 product={product}
-                productStock={stock[product.name]} />
+                productStock={stock[product.name]}
+              />
             ))}
           </Table>
         </Section>
@@ -259,8 +236,10 @@ export const Vending = (props, context) => {
  * Search box
  */
 export const prepareSearch = (products, searchText = '') => {
-  const testSearch = createSearch<ProductRecord>(searchText,
-    product => product.name);
+  const testSearch = createSearch<ProductRecord>(
+    searchText,
+    (product) => product.name
+  );
   return flow([
     // Optional search term
     searchText && filter(testSearch),
