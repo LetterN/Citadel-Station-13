@@ -104,3 +104,9 @@ SUBSYSTEM_DEF(input)
 /client/verb/NONSENSICAL_VERB_THAT_DOES_NOTHING()
 	set name = "NONSENSICAL_VERB_THAT_DOES_NOTHING"
 	set hidden = TRUE
+
+
+///stupid workaround for byond not recognizing the /atom/Click typepath for the queued click callbacks
+/atom/proc/_Click(location, control, params)
+	if(usr)
+		Click(location, control, params)

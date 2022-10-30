@@ -1,6 +1,6 @@
 SUBSYSTEM_DEF(activity)
 	name = "Activity tracking"
-	flags = SS_BACKGROUND | SS_NO_TICK_CHECK
+	flags = SS_BACKGROUND
 	priority = FIRE_PRIORITY_ACTIVITY
 	wait = 1 MINUTES
 	var/list/deferred_threats = list()

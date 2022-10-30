@@ -30,7 +30,6 @@
 SUBSYSTEM_DEF(sun)
 	name = "Sun"
 	wait = 1 MINUTES
-	flags = SS_NO_TICK_CHECK
 
 	var/list/datum/sun/suns = list()
 	var/datum/sun/primary_sun

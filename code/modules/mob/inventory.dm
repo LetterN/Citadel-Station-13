@@ -440,9 +440,23 @@
 	set name = "quick-equip"
 	set hidden = 1
 
+	set name = "quick-equip"
+	set hidden = TRUE
+
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, .proc/execute_quick_equip))
+
+///proc extender of [/mob/verb/quick_equip] used to make the verb queuable if the server is overloaded
+/mob/proc/execute_quick_equip()
 	var/obj/item/I = get_active_held_item()
-	if (I)
-		I.equip_to_best_slot(src)
+	if(!I)
+		to_chat(src, span_warning("You are not holding anything to equip!"))
+		return
+	if (temporarilyRemoveItemFromInventory(I) && !QDELETED(I))
+		if(I.equip_to_best_slot(src))
+			return
+		if(put_in_active_hand(I))
+			return
+		I.forceMove(drop_location())
 
 //used in code for items usable by both carbon and drones, this gives the proper back slot for each mob.(defibrillator, backpack watertank, ...)
 /mob/proc/getBackSlot()

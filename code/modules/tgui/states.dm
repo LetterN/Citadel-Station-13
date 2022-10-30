@@ -24,7 +24,7 @@
 
 	if(isobserver(user))
 		// If they turn on ghost AI control, admins can always interact.
-		if(isghost(user) && is_admin(user))
+		if(IsAdminGhost(user))
 			. = max(., UI_INTERACTIVE)
 
 		// Regular ghosts can always at least view if in range.
@@ -73,8 +73,7 @@
 
 /mob/living/shared_ui_interaction(src_object)
 	. = ..()
-	// downgrade from UI_INTERACTIVE to UI_UPDATE when lying or resting.
-	if((lying || resting) && . == UI_INTERACTIVE)
+	if(!(mobility_flags & MOBILITY_UI) && . == UI_INTERACTIVE)
 		return UI_UPDATE
 
 /mob/living/silicon/ai/shared_ui_interaction(src_object)
@@ -88,7 +87,7 @@
 /mob/living/silicon/robot/shared_ui_interaction(src_object)
 	// Disable UIs if the object isn't installed in the borg AND the borg is either locked, has a dead cell, or no cell.
 	var/atom/device = src_object
-	if((istype(device) && device.loc != src) && (!cell || cell.charge <= 0 || lockcharge))
+	if((istype(device) && device.loc != src) && (!cell || cell.charge <= 0 || locked_down))
 		return UI_DISABLED
 	return ..()
 
@@ -119,6 +118,6 @@
 	return UI_CLOSE
 
 /mob/living/carbon/human/shared_living_ui_distance(atom/movable/src_object, viewcheck = TRUE, allow_tk = TRUE)
-	if(allow_tk && get_dist(src, src_object) > tk_maxrange)
+	if(allow_tk && dna.check_mutation(TK) && tkMaxRangeCheck(src, src_object))
 		return UI_INTERACTIVE
 	return ..()

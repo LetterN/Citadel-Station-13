@@ -29,7 +29,7 @@
 
 	if(isobserver(user))
 		// If they turn on ghost AI control, admins can always interact.
-		if(is_admin(user) && isghost(user))
+		if(IsAdminGhost(user))
 			return UI_INTERACTIVE
 
 		// Regular ghosts can always at least view if in range.
@@ -51,8 +51,7 @@
 /// Returns a UI status such that those without blocked hands will be able to interact,
 /// but everyone else can only watch.
 /proc/ui_status_user_has_free_hands(mob/user, atom/source)
-// HAS_TRAIT(user, TRAIT_HANDS_BLOCKED)
-	return user.can_use_hands() ? UI_UPDATE : UI_INTERACTIVE
+	return (!user.restrained(TRUE) && user.get_num_arms() && user.get_empty_held_indexes()) ? UI_UPDATE : UI_INTERACTIVE
 
 /// Returns a UI status such that advanced tool users will be able to interact,
 /// but everyone else can only watch.

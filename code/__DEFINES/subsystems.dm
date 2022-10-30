@@ -11,7 +11,7 @@
  *
  * make sure you add an update to the schema_version stable in the db changelog
  */
-#define DB_MAJOR_VERSION 4
+#define DB_MAJOR_VERSION 5
 
 /**
  * DB minor schema version
@@ -20,7 +20,8 @@
  *
  * make sure you add an update to the schema_version stable in the db changelog
  */
-#define DB_MINOR_VERSION 7
+#define DB_MINOR_VERSION 22
+
 
 //! ## Timing subsystem
 /**
@@ -62,6 +63,10 @@
 ///Empty ID define
 #define TIMER_ID_NULL -1
 
+/// Used to trigger object removal from a processing list
+#define PROCESS_KILL 26
+
+
 //! ## Initialization subsystem
 
 ///New should not call Initialize
@@ -91,110 +96,150 @@
 #define INITIALIZE_IMMEDIATE(X) ##X/New(loc, ...){\
 	..();\
 	if(!(flags_1 & INITIALIZED_1)) {\
+		var/previous_initialized_value = SSatoms.initialized;\
+		SSatoms.initialized = INITIALIZATION_INNEW_MAPLOAD;\
 		args[1] = TRUE;\
-		SSatoms.InitAtom(src, args);\
+		SSatoms.InitAtom(src, FALSE, args);\
+		SSatoms.initialized = previous_initialized_value;\
 	}\
 }
 
+//! ### SS initialization hints
+/**
+ * Negative values incidate a failure or warning of some kind, positive are good.
+ * 0 and 1 are unused so that TRUE and FALSE are guarenteed to be invalid values.
+ */
+
+/// Subsystem failed to initialize entirely. Print a warning, log, and disable firing.
+#define SS_INIT_FAILURE -2
+
+/// The default return value which must be overriden. Will succeed with a warning.
+#define SS_INIT_NONE -1
+
+/// Subsystem initialized sucessfully.
+#define SS_INIT_SUCCESS 2
+
+/// Successful, but don't print anything. Useful if subsystem was disabled.
+#define SS_INIT_NO_NEED 3
+
+//! ### SS initialization load orders
 // Subsystem init_order, from highest priority to lowest priority
 // Subsystems shutdown in the reverse of the order they initialize in
 // The numbers just define the ordering, they are meaningless otherwise.
 
-#define INIT_ORDER_PROFILER			102
-#define INIT_ORDER_FAIL2TOPIC		101
-#define INIT_ORDER_TITLE			100
-#define INIT_ORDER_GARBAGE			99
-#define INIT_ORDER_DBCORE			95
-#define INIT_ORDER_BLACKBOX			94
-#define INIT_ORDER_SERVER_MAINT		93
-#define INIT_ORDER_INPUT			85
-#define INIT_ORDER_SOUNDS			83
-#define INIT_ORDER_INSTRUMENTS		82
-#define INIT_ORDER_VIS				80
+#define INIT_ORDER_PROFILER 102
+#define INIT_ORDER_FAIL2TOPIC 101 // cit
+#define INIT_ORDER_TITLE 100
+#define INIT_ORDER_GARBAGE 99
+#define INIT_ORDER_DBCORE 95
+#define INIT_ORDER_BLACKBOX 94
+#define INIT_ORDER_SERVER_MAINT 93
+#define INIT_ORDER_INPUT 85
+#define INIT_ORDER_SOUNDS 83
+#define INIT_ORDER_INSTRUMENTS 82
+#define INIT_ORDER_GREYSCALE 81
+#define INIT_ORDER_VIS 80
 #define INIT_ORDER_SECURITY_LEVEL 79 // We need to load before events so that it has a security level to choose from.
-#define INIT_ORDER_ACHIEVEMENTS		77
-#define INIT_ORDER_RESEARCH			75
-#define INIT_ORDER_STATION			74 //This is high priority because it manipulates a lot of the subsystems that will initialize after it.
-#define INIT_ORDER_EVENTS			70
-#define INIT_ORDER_JOBS				65
-#define INIT_ORDER_QUIRKS			60
-#define INIT_ORDER_TICKER			55
-// #define INIT_ORDER_TCG				55
-#define INIT_ORDER_MAPPING			50
-#define INIT_ORDER_TIMETRACK		47
-#define INIT_ORDER_NETWORKS			45
-#define INIT_ORDER_ECONOMY			40
-#define INIT_ORDER_HOLODECK			35
-// #define INIT_ORDER_OUTPUTS			35
-#define INIT_ORDER_ATOMS			30
-#define INIT_ORDER_LANGUAGE			25
-#define INIT_ORDER_MACHINES			20
-#define INIT_ORDER_CIRCUIT			15
-// #define INIT_ORDER_SKILLS			15
-#define INIT_ORDER_TIMER			1
-#define INIT_ORDER_DEFAULT			0
-#define INIT_ORDER_AIR				-1
-#define INIT_ORDER_AIR_TURFS		-2
-#define INIT_ORDER_PERSISTENCE		-2 //before assets because some assets take data from SSPersistence
-#define INIT_ORDER_MINIMAP			-3
-#define INIT_ORDER_ASSETS			-4
-#define INIT_ORDER_ICON_SMOOTHING	-5
-#define INIT_ORDER_OVERLAY			-6
-#define INIT_ORDER_XKEYSCORE		-10
-#define INIT_ORDER_STICKY_BAN		-10
-#define INIT_ORDER_LIGHTING			-20
-#define INIT_ORDER_SHUTTLE			-21
-#define INIT_ORDER_MINOR_MAPPING	-40
-#define INIT_ORDER_PATH				-50
-// #define INIT_ORDER_DISCORD			-60
-// #define INIT_ORDER_EXPLOSIONS		-69
-#define INIT_ORDER_STATPANELS		-98
-#define INIT_ORDER_DEMO				-99  // o avoid a bunch of changes related to initialization being written, do this last
-#define INIT_ORDER_CHAT				-100 //Should be last to ensure chat remains smooth during init.
-
+#define INIT_ORDER_DISCORD 78
+#define INIT_ORDER_ACHIEVEMENTS 77
+#define INIT_ORDER_STATION 74 //This is high priority because it manipulates a lot of the subsystems that will initialize after it.
+#define INIT_ORDER_QUIRKS 73
+#define INIT_ORDER_REAGENTS 72 //HAS to be before mapping and assets - both create objects, which creates reagents, which relies on lists made in this subsystem
+#define INIT_ORDER_EVENTS 70
+#define INIT_ORDER_IDACCESS 66
+#define INIT_ORDER_JOBS 65 // Must init before atoms, to set up properly the dynamic job lists.
+#define INIT_ORDER_AI_MOVEMENT 56 //We need the movement setup
+#define INIT_ORDER_AI_CONTROLLERS 55 //So the controller can get the ref
+#define INIT_ORDER_TICKER 55
+#define INIT_ORDER_TCG 55
+#define INIT_ORDER_MAPPING 50
+#define INIT_ORDER_EARLY_ASSETS 48
+#define INIT_ORDER_RESEARCH 47
+#define INIT_ORDER_TIMETRACK 46
+#define INIT_ORDER_NETWORKS 45
+#define INIT_ORDER_SPATIAL_GRID 43
+#define INIT_ORDER_ECONOMY 40
+#define INIT_ORDER_OUTPUTS 35
+#define INIT_ORDER_HOLODECK 35 // Cit. tg doesnt use ssholodecks anymore
+#define INIT_ORDER_RESTAURANT 34
+#define INIT_ORDER_ATOMS 30
+#define INIT_ORDER_LANGUAGE 25
+#define INIT_ORDER_MACHINES 20
+#define INIT_ORDER_CIRCUIT 15 // Cit. Old circuit
+#define INIT_ORDER_SKILLS 15
+#define INIT_ORDER_TIMER 1
+#define INIT_ORDER_DEFAULT 0
+#define INIT_ORDER_AIR -1
+#define INIT_ORDER_PERSISTENCE -2
+#define INIT_ORDER_PERSISTENT_PAINTINGS -3 // Assets relies on this
+#define INIT_ORDER_VOTE -4 // Needs to be after persistence so that recent maps are not loaded.
+#define INIT_ORDER_ASSETS -5
+#define INIT_ORDER_ICON_SMOOTHING -6
+#define INIT_ORDER_OVERLAY -7
+#define INIT_ORDER_XKEYSCORE -10
+#define INIT_ORDER_STICKY_BAN -10
+#define INIT_ORDER_LIGHTING -20
+#define INIT_ORDER_SHUTTLE -21
+#define INIT_ORDER_MINOR_MAPPING -40
+#define INIT_ORDER_PATH -50
+#define INIT_ORDER_EXPLOSIONS -69
+#define INIT_ORDER_STATPANELS -97
+#define INIT_ORDER_BAN_CACHE -98
+#define INIT_ORDER_INIT_PROFILER -99 //Near the end, logs the costs of initialize
+#define INIT_ORDER_CHAT -100 //Should be last to ensure chat remains smooth during init.
 
 // Subsystem fire priority, from lowest to highest priority
 // If the subsystem isn't listed here it's either DEFAULT or PROCESS (if it's a processing subsystem child)
 
-#define FIRE_PRIORITY_VORE			5
-#define FIRE_PRIORITY_ACTIVITY		10
-#define FIRE_PRIORITY_IDLE_NPC		10
-#define FIRE_PRIORITY_SERVER_MAINT	10
-#define FIRE_PRIORITY_RESEARCH		10
-#define FIRE_PRIORITY_VIS			10
-#define FIRE_PRIORITY_GARBAGE		15
-#define FIRE_PRIORITY_WET_FLOORS	20
-#define FIRE_PRIORITY_AIR			20
-#define FIRE_PRIORITY_NPC			20
-#define FIRE_PRIORITY_PROCESS		25
-#define FIRE_PRIORITY_THROWING		25
-#define FIRE_PRIORITY_SPACEDRIFT	30
-#define FIRE_PRIORITY_INSTRUMENTS	30
-#define FIRE_PRIORITY_FIELDS		30
-#define FIRE_PRIOTITY_SMOOTHING		35
-#define FIRE_PRIORITY_HUDS			40
-#define FIRE_PRIORITY_NETWORKS		40
-#define FIRE_PRIORITY_OBJ			40
-#define FIRE_PRIORITY_ACID			40
-#define FIRE_PRIOTITY_BURNING		40
-#define FIRE_PRIORITY_AIR_TURFS		40
-#define FIRE_PRIORITY_DEFAULT		50
-#define FIRE_PRIORITY_PARALLAX		65
-#define FIRE_PRIORITY_MOBS			100
-#define FIRE_PRIORITY_TGUI			110
-#define FIRE_PRIORITY_PROJECTILES	200
-#define FIRE_PRIORITY_TICKER		200
-#define FIRE_PRIORITY_ATMOS_ADJACENCY	300
-#define FIRE_PRIORITY_EXPLOSIONS	350
-#define FIRE_PRIORITY_STATPANEL		390
-#define FIRE_PRIORITY_CHAT			400
-#define FIRE_PRIORITY_RUNECHAT		410
-#define FIRE_PRIORITY_OVERLAYS		500
-#define FIRE_PRIORITY_CALLBACKS		600
-// #define FIRE_PRIORITY_EXPLOSIONS	666
-#define FIRE_PRIORITY_TIMER			700
+#define FIRE_PRIORITY_VORE 5  // cit
+#define FIRE_PRIORITY_ACTIVITY 10  // cit
+#define FIRE_PRIORITY_PING 10
+#define FIRE_PRIORITY_IDLE_NPC 10
+#define FIRE_PRIORITY_SERVER_MAINT 10
+#define FIRE_PRIORITY_RESEARCH 10
+#define FIRE_PRIORITY_VIS 10
+#define FIRE_PRIORITY_AMBIENCE 10
+#define FIRE_PRIORITY_GARBAGE 15
+#define FIRE_PRIORITY_DATABASE 16
+#define FIRE_PRIORITY_WET_FLOORS 20
+#define FIRE_PRIORITY_FLUIDS 20
+#define FIRE_PRIORITY_AIR 20
+#define FIRE_PRIORITY_NPC 20
+#define FIRE_PRIORITY_NPC_MOVEMENT 21
+#define FIRE_PRIORITY_NPC_ACTIONS 22
+#define FIRE_PRIORITY_PROCESS 25
+#define FIRE_PRIORITY_THROWING 25
+#define FIRE_PRIORITY_REAGENTS 26
+#define FIRE_PRIORITY_FIELDS 30 // Cit.
+#define FIRE_PRIORITY_SPACEDRIFT 30
+#define FIRE_PRIOTITY_SMOOTHING 35
+#define FIRE_PRIORITY_HUDS 40 // Cit.
+#define FIRE_PRIORITY_NETWORKS 40
+#define FIRE_PRIORITY_OBJ 40
+#define FIRE_PRIORITY_ACID 40
+#define FIRE_PRIOTITY_BURNING 40
+#define FIRE_PRIORITY_DEFAULT 50
+#define FIRE_PRIORITY_PARALLAX 65
+#define FIRE_PRIORITY_INSTRUMENTS 80
+#define FIRE_PRIORITY_MOBS 100
+#define FIRE_PRIORITY_ASSETS 105
+#define FIRE_PRIORITY_TGUI 110
+#define FIRE_PRIORITY_PROJECTILES 200 // Cit
+#define FIRE_PRIORITY_TICKER 200
+#define FIRE_PRIORITY_ATMOS_ADJACENCY 300 // cit
+#define FIRE_PRIORITY_STATPANEL 390
+#define FIRE_PRIORITY_CHAT 400
+#define FIRE_PRIORITY_RUNECHAT 410
+#define FIRE_PRIORITY_MOUSE_ENTERED 450
+#define FIRE_PRIORITY_OVERLAYS 500
+#define FIRE_PRIORITY_CALLBACKS 600 // cit. Auxtools callbacks
+#define FIRE_PRIORITY_EXPLOSIONS 666
+#define FIRE_PRIORITY_TIMER 700
 #define FIRE_PRIORITY_SOUND_LOOPS 800
-#define FIRE_PRIORITY_INPUT			1000 // This must always always be the max highest priority. Player input must never be lost.
+#define FIRE_PRIORITY_SPEECH_CONTROLLER 900
+#define FIRE_PRIORITY_DELAYED_VERBS 950
+#define FIRE_PRIORITY_INPUT 1000 // This must always always be the max highest priority. Player input must never be lost.
+
 
 // SS runlevels
 
@@ -206,27 +251,17 @@
 
 #define RUNLEVELS_DEFAULT (RUNLEVEL_SETUP | RUNLEVEL_GAME | RUNLEVEL_POSTGAME)
 
-// SSair run section
-#define SSAIR_PIPENETS 1
-#define SSAIR_ATMOSMACHINERY 2
-#define SSAIR_EXCITEDGROUPS 3
-#define SSAIR_HIGHPRESSURE 4
-#define SSAIR_HOTSPOTS 5
-#define SSAIR_TURF_CONDUCTION 6
-#define SSAIR_REBUILD_PIPENETS 7
-#define SSAIR_EQUALIZE 8
-#define SSAIR_ACTIVETURFS 9
-#define SSAIR_TURF_POST_PROCESS 10
-#define SSAIR_FINALIZE_TURFS 11
-#define SSAIR_ATMOSMACHINERY_AIR 12
-#define SSAIR_DEFERRED_AIRS 13
-
-// Subsystem delta times or tickrates, in seconds. I.e, how many seconds in between each process() call for objects being processed by that subsystem.
-// Only use these defines if you want to access some other objects processing delta_time, otherwise use the delta_time that is sent as a parameter to process()
-#define SSFLUIDS_DT (SSfluids.wait/10)
-#define SSMACHINES_DT (SSmachines.wait/10)
-#define SSMOBS_DT (SSmobs.wait/10)
-#define SSOBJ_DT (SSobj.wait/10)
+//SSticker.current_state values
+/// Game is loading
+#define GAME_STATE_STARTUP 0
+/// Game is loaded and in pregame lobby
+#define GAME_STATE_PREGAME 1
+/// Game is attempting to start the round
+#define GAME_STATE_SETTING_UP 2
+/// Game has round in progress
+#define GAME_STATE_PLAYING 3
+/// Game has round finished
+#define GAME_STATE_FINISHED 4
 
 //! ## Overlays subsystem
 
@@ -253,5 +288,31 @@
 	* * callback the callback to call on timer finish
 	* * wait deciseconds to run the timer for
 	* * flags flags for this timer, see: code\__DEFINES\subsystems.dm
+	* * timer_subsystem the subsystem to insert this timer into
 */
 #define addtimer(args...) _addtimer(args, file = __FILE__, line = __LINE__)
+
+// SSair run section
+#define SSAIR_PIPENETS 1
+#define SSAIR_ATMOSMACHINERY 2
+#define SSAIR_EXCITEDGROUPS 3
+#define SSAIR_HIGHPRESSURE 4
+#define SSAIR_HOTSPOTS 5
+#define SSAIR_TURF_CONDUCTION 6
+#define SSAIR_REBUILD_PIPENETS 7
+#define SSAIR_EQUALIZE 8
+#define SSAIR_ACTIVETURFS 9
+#define SSAIR_TURF_POST_PROCESS 10
+#define SSAIR_FINALIZE_TURFS 11
+#define SSAIR_ATMOSMACHINERY_AIR 12
+#define SSAIR_DEFERRED_AIRS 13
+
+// Subsystem delta times or tickrates, in seconds. I.e, how many seconds in between each process() call for objects being processed by that subsystem.
+// Only use these defines if you want to access some other objects processing delta_time, otherwise use the delta_time that is sent as a parameter to process()
+#define SSFLUIDS_DT (SSfluids.wait/10)
+#define SSMACHINES_DT (SSmachines.wait/10)
+#define SSMOBS_DT (SSmobs.wait/10)
+#define SSOBJ_DT (SSobj.wait/10)
+
+/// The timer key used to know how long subsystem initialization takes
+#define SS_INIT_TIMER_KEY "ss_init"

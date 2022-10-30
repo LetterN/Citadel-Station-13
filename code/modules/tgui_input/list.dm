@@ -22,8 +22,9 @@
 		else
 			return
 	/// Client does NOT have tgui_input on: Returns regular input
-	if(!user.client.prefs.read_preference(/datum/preference/toggle/tgui_input))
-		return input(user, message, title, default) as null|anything in items
+	// TODO implement this! Unlucky tgui is mandatory
+	// if(!user.client.prefs.read_preference(/datum/preference/toggle/tgui_input))
+	// 	return input(user, message, title, default) as null|anything in items
 	var/datum/tgui_list_input/input = new(user, message, title, items, default, timeout)
 	input.ui_interact(user)
 	input.wait()
@@ -109,9 +110,9 @@
 	var/list/data = list()
 	data["init_value"] = default || items[1]
 	data["items"] = items
-	data["large_buttons"] = user.client.prefs.read_preference(/datum/preference/toggle/tgui_input_large)
+	// data["large_buttons"] = user.client.prefs.read_preference(/datum/preference/toggle/tgui_input_large)
 	data["message"] = message
-	data["swapped_buttons"] = user.client.prefs.read_preference(/datum/preference/toggle/tgui_input_swapped)
+	// data["swapped_buttons"] = user.client.prefs.read_preference(/datum/preference/toggle/tgui_input_swapped)
 	data["title"] = title
 	return data
 

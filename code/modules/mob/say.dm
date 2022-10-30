@@ -4,20 +4,24 @@
 	set name = "say_indicator"
 	set hidden = TRUE
 	set category = "IC"
+
 	client?.last_activity = world.time
 	display_typing_indicator()
 	var/message = input(usr, "", "say") as text|null
 	// If they don't type anything just drop the message.
 	clear_typing_indicator()		// clear it immediately!
-	if(!length(message))
-		return
-	return say_verb(message)
 
+	//queue this message because verbs are scheduled to process after SendMaps in the tick and speech is pretty expensive when it happens.
+	//by queuing this for next tick the mc can compensate for its cost instead of having speech delay the start of the next tick
+	if(message)
+		QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, /atom/movable/proc/say, message), SSspeech_controller)
+
+///what clients use to speak. when you type a message into the chat bar in say mode, this is the first thing that goes off serverside.
 /mob/verb/say_verb(message as text)
-	set name = "say"
+	set name = "Say"
 	set category = "IC"
-	if(!length(message))
-		return
+	set instant = TRUE
+
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
@@ -25,7 +29,10 @@
 
 	client?.last_activity = world.time
 
-	say(message)
+	//queue this message because verbs are scheduled to process after SendMaps in the tick and speech is pretty expensive when it happens.
+	//by queuing this for next tick the mc can compensate for its cost instead of having speech delay the start of the next tick
+	if(message)
+		QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, /atom/movable/proc/say, message), SSspeech_controller)
 
 /mob/verb/me_typing_indicator()
 	set name = "me_indicator"
@@ -40,11 +47,11 @@
 		return
 	return me_verb(message)
 
+///The me emote verb
 /mob/verb/me_verb(message as message)
-	set name = "me"
+	set name = "Me"
 	set category = "IC"
-	if(!length(message))
-		return
+
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
@@ -54,12 +61,12 @@
 		to_chat(usr, "<span class='danger'>^^^----- The preceeding message has been DISCARDED for being over the maximum length of [MAX_MESSAGE_LEN]. It has NOT been sent! -----^^^</span>")
 		return
 
-	message = trim(html_encode(message), MAX_MESSAGE_LEN)
 	clear_typing_indicator()		// clear it immediately!
 
 	client?.last_activity = world.time
 
-	usr.emote("me",1,message,TRUE)
+	message = trim(html_encode(message), MAX_MESSAGE_LEN)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, /mob/proc/emote, "me", 1, message, TRUE), SSspeech_controller)
 
 /mob/say_mod(input, message_mode)
 	if(message_mode == MODE_WHISPER_CRIT)
@@ -86,15 +93,18 @@
 		return
 	return whisper_verb(message)
 
+///Whisper verb
 /mob/verb/whisper_verb(message as text)
 	set name = "Whisper"
 	set category = "IC"
-	if(!length(message))
-		return
+	set instant = TRUE
+
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
-	whisper(message)
+
+	if(message)
+		QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, /mob/proc/whisper, message), SSspeech_controller)
 
 /mob/proc/whisper(message, datum/language/language=null)
 	client?.last_activity = world.time

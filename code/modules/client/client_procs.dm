@@ -148,7 +148,16 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		if(QDELETED(real_src))
 			return
 
-	..()	//redirect to hsrc.Topic()
+	//fun fact: Topic() acts like a verb and is executed at the end of the tick like other verbs. So we have to queue it if the server is
+	//overloaded
+	if(hsrc && hsrc != holder && DEFAULT_TRY_QUEUE_VERB(VERB_CALLBACK(src, .proc/_Topic, hsrc, href, href_list)))
+		return
+	..() //redirect to hsrc.Topic()
+
+///dumb workaround because byond doesnt seem to recognize the .proc/Topic() typepath for /datum/proc/Topic() from the client Topic,
+///so we cant queue it without this
+/client/proc/_Topic(datum/hsrc, href, list/href_list)
+	return hsrc.Topic(href, href_list)
 
 /client/proc/handle_statpanel_click(list/href_list)
 	var/atom/target = locate(href_list["statpanel_item_target"])
@@ -919,6 +928,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		if (clicklimiter[SECOND_COUNT] > scl)
 			to_chat(src, "<span class='danger'>Your previous click was ignored because you've done too many in a second</span>")
 			return
+
+	//check if the server is overloaded and if it is then queue up the click for next tick
+	//yes having it call a wrapping proc on the subsystem is fucking stupid glad we agree unfortunately byond insists its reasonable
+	if(!QDELETED(object) && TRY_QUEUE_VERB(VERB_CALLBACK(object, /atom/proc/_Click, location, control, params), VERB_HIGH_PRIORITY_QUEUE_THRESHOLD, SSinput, control))
+		return
 
 	if(prefs.log_clicks)
 		log_click(object, location, control, params, src, extra_info? "clicked ([extra_info])" : null)
