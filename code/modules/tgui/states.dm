@@ -24,7 +24,7 @@
 
 	if(isobserver(user))
 		// If they turn on ghost AI control, admins can always interact.
-		if(IsAdminGhost(user))
+		if(isghost(user) && is_admin(user))
 			. = max(., UI_INTERACTIVE)
 
 		// Regular ghosts can always at least view if in range.
@@ -61,7 +61,7 @@
  */
 /mob/proc/shared_ui_interaction(src_object)
 	// Close UIs if mindless.
-	if(!client)
+	if(!client) // && !HAS_TRAIT(src, TRAIT_PRESERVE_UI_WITHOUT_CLIENT))
 		return UI_CLOSE
 	// Disable UIs if unconcious.
 	else if(stat)
@@ -73,13 +73,14 @@
 
 /mob/living/shared_ui_interaction(src_object)
 	. = ..()
-	if(!(mobility_flags & MOBILITY_UI) && . == UI_INTERACTIVE)
+	// downgrade from UI_INTERACTIVE to UI_UPDATE when lying or resting.
+	if((lying || resting) && . == UI_INTERACTIVE)
 		return UI_UPDATE
 
 /mob/living/silicon/ai/shared_ui_interaction(src_object)
 	// Disable UIs if the AI is unpowered.
-	if(apc_override == src_object) //allows AI to (eventually) use the interface for their own APC even when out of power
-		return UI_INTERACTIVE
+	// if(apc_override == src_object) //allows AI to (eventually) use the interface for their own APC even when out of power
+	// 	return UI_INTERACTIVE
 	if(lacks_power())
 		return UI_DISABLED
 	return ..()
@@ -87,7 +88,7 @@
 /mob/living/silicon/robot/shared_ui_interaction(src_object)
 	// Disable UIs if the object isn't installed in the borg AND the borg is either locked, has a dead cell, or no cell.
 	var/atom/device = src_object
-	if((istype(device) && device.loc != src) && (!cell || cell.charge <= 0 || locked_down))
+	if((istype(device) && device.loc != src) && (!cell || cell.charge <= 0 || lockcharge))
 		return UI_DISABLED
 	return ..()
 
@@ -100,7 +101,7 @@
  *
  * return UI_state The state of the UI.
  */
-/mob/living/proc/shared_living_ui_distance(atom/movable/src_object, viewcheck = TRUE)
+/mob/living/proc/shared_living_ui_distance(atom/movable/src_object, viewcheck = TRUE, allow_tk = TRUE)
 	// If the object is obscured, close it.
 	if(viewcheck && !(src_object in view(src)))
 		return UI_CLOSE
@@ -117,7 +118,7 @@
 	// Otherwise, we got nothing.
 	return UI_CLOSE
 
-/mob/living/carbon/human/shared_living_ui_distance(atom/movable/src_object, viewcheck = TRUE)
-	if(dna.check_mutation(TK) && tkMaxRangeCheck(src, src_object))
+/mob/living/carbon/human/shared_living_ui_distance(atom/movable/src_object, viewcheck = TRUE, allow_tk = TRUE)
+	if(allow_tk && get_dist(src, src_object) > tk_maxrange)
 		return UI_INTERACTIVE
 	return ..()
